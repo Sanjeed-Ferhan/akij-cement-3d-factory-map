@@ -40,6 +40,16 @@ const stamp = () => Date.now() + '' + Math.floor(Math.random() * 1e6);
 
 const out = { ok: false, connected: false, lastAt: 0, milldata: null, status: {} };
 
+// seed with the previously published file (carry forward last-known values,
+// e.g. event-driven packer statuses, and last milldata if a round fails)
+try {
+  const seed = JSON.parse(fs.readFileSync(process.env.SEED_FILE || 'live.json', 'utf8'));
+  if (seed && typeof seed === 'object') {
+    if (seed.milldata) { out.milldata = seed.milldata; out.lastAt = seed.lastAt || 0; }
+    if (seed.status) out.status = Object.assign({}, seed.status);
+  }
+} catch (e) { /* no seed */ }
+
 function collect(durMs) {
   return new Promise(async (resolve) => {
     try {

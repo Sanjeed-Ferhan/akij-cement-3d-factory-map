@@ -28,6 +28,7 @@ jobs:
           REPO: ${{ github.repository }}
           IBOS_USER: ${{ secrets.IBOS_USER }}
           IBOS_PASS: ${{ secrets.IBOS_PASS }}
+          SEED_FILE: live.json
         run: |
           set -e
           publish() {
