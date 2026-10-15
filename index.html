@@ -664,7 +664,7 @@ function fetchLive(){
   });
 }
 /* ---------- IBOS live bridge (silo levels + mill TPH + machine status) ---------- */
-var LIVE=null, LIVE_AT=0, LIVE_URL=null, currentPanel=null, MACHSTATUS=null;
+var LIVE=null, LIVE_AT=0, LIVE_URL=null, currentPanel=null, MACHSTATUS=null, AUTO_METRIC_SWITCHED=false;
 var MACHINES=[
   ['loesche','LOESCHE Mill'],['fls','FLS Mill'],
   ['packer1','Packer 1'],['packer2','Packer 2'],['packer3','Packer 3'],['packer4','Packer 4'],['packer5','Packer 5']
@@ -672,7 +672,9 @@ var MACHINES=[
 function fetchIbosLive(){
   var urls = (location.protocol==='file:') ? ['http://localhost:8787/api/live','/api/live'] : ['/api/live','http://localhost:8787/api/live'];
   (function tryNext(i){
-    if(i>=urls.length){ ibosStatus(false,'IBOS bridge offline · run: node live-server.js'); return; }
+    if(i>=urls.length){ ibosStatus(false,'IBOS bridge offline · run: node live-server.js');
+      if(!AUTO_METRIC_SWITCHED && METRIC==='live'){ AUTO_METRIC_SWITCHED=true; setMetric('oee'); }
+      return; }
     fetch(urls[i],{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(j){ if(!j||!j.milldata) throw new Error('no milldata'); LIVE_URL=urls[i]; ibosStatus(true,null); applyLive(j.milldata, j.status); })
       .catch(function(){ tryNext(i+1); });
