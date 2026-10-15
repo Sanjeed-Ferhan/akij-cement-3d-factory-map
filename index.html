@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Akij Cement — 3D Factory Map (Workcenter Tags)</title>
+<style>
+  :root{
+    --teal:#0f5c56; --teal2:#0b7a6f; --green:#2e7d32; --red:#c62828; --amber:#f9a825;
+    --ink:#12211f; --muted:#5d6b69; --line:#e2e8e7; --bg:#eef2f1; --card:#ffffff;
+    --green2:#12b76a; --amber2:#f4b740; --red2:#ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:13px}
+  .wrap{max-width:1400px;margin:0 auto;padding:14px 16px 28px;display:flex;flex-direction:column;gap:12px}
+  header.top{background:linear-gradient(90deg,#0f5c56,#0b7a6f);color:#fff;border-radius:10px;padding:14px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  header.top .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:46px;height:46px;border:2px solid #bff3ea;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#bff3ea;font-size:20px}
+  header.top h1{margin:0;font-size:21px;letter-spacing:.5px;font-weight:800}
+  header.top .sub{font-size:11.5px;opacity:.92;margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+  .pill{background:#0a3f3a;border-radius:8px;padding:8px 12px;text-align:right;font-size:11px;line-height:1.5}
+  .pill b{font-size:12px;display:block;color:#bff3ea}
+  .bar{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .bar button{border:1px solid var(--line);background:#fff;color:var(--teal);font-weight:700;font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;letter-spacing:.3px}
+  .bar button.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .bar .sp{flex:1}
+  .live{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
+  .dotlive{width:9px;height:9px;border-radius:50%;background:var(--green2);box-shadow:0 0 0 0 rgba(18,183,106,.6);animation:pulse 2s infinite}
+  .dotlive.off{background:var(--muted);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(18,183,106,.5)}70%{box-shadow:0 0 0 8px rgba(18,183,106,0)}100%{box-shadow:0 0 0 0 rgba(18,183,106,0)}}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);align-items:center}
+  .legend .chip{display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .stage{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#dbe9e7 0%,#c2d6d3 45%,#aec7c3 100%);height:66vh;min-height:460px}
+  #canvas{display:block;width:100%;height:100%}
+  #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .wc-tag{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;
+    background:rgba(255,255,255,.97);border:1px solid var(--line);border-left:4px solid var(--muted);
+    border-radius:7px;padding:4px 8px 5px;width:132px;box-shadow:0 3px 10px rgba(15,60,56,.16);
+    transition:box-shadow .12s ease}
+  .wc-tag:hover{box-shadow:0 8px 22px rgba(15,60,56,.34);z-index:9999!important}
+  .wc-tag .code{font-size:8.5px;letter-spacing:.6px;color:var(--muted);font-weight:700;text-transform:uppercase}
+  .wc-tag .nm{font-size:10.5px;font-weight:800;color:var(--ink);line-height:1.15;margin:1px 0 2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wc-tag .val{font-size:12px;font-weight:800}
+  .wc-tag .val small{font-size:9px;font-weight:700;color:var(--muted);margin-left:3px}
+  .wc-tag .sub{font-size:9px;font-weight:600;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mlabel{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .wc-tag.rag-green{border-left-color:var(--green2)}
+  .wc-tag.rag-amber{border-left-color:var(--amber2)}
+  .wc-tag.rag-red{border-left-color:var(--red2)}
+  .wc-tag.rag-red{animation:redpulse 1.8s ease-in-out infinite}
+  @keyframes redpulse{0%,100%{box-shadow:0 4px 12px rgba(239,68,68,.2)}50%{box-shadow:0 0 0 5px rgba(239,68,68,.16),0 4px 12px rgba(239,68,68,.3)}}
+  .wc-tag .v-green{color:var(--green)} .wc-tag .v-amber{color:#b26a00} .wc-tag .v-red{color:var(--red)}
+  .wc-tag .stem{position:absolute;left:50%;bottom:-16px;width:2px;height:16px;background:rgba(15,92,86,.45);transform:translateX(-50%)}
+  .wc-tag .foot{width:7px;height:7px;border-radius:50%;background:rgba(15,92,86,.55);position:absolute;left:50%;bottom:-19px;transform:translateX(-50%)}
+  .hud{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+  .hud .stat{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:9px;padding:8px 11px;min-width:172px;box-shadow:0 3px 10px rgba(15,60,56,.12)}
+  .hud .stat .k{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .hud .stat .v{font-size:20px;font-weight:800}
+  .hud .stat .s{font-size:10px;color:var(--muted)}
+  .silos{position:absolute;right:12px;bottom:12px;width:290px;max-width:calc(100% - 24px);background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:11px;padding:10px 13px 12px;box-shadow:0 6px 18px rgba(15,60,56,.16);backdrop-filter:blur(2px)}
+  .silos h4{margin:0 0 8px;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:800;display:flex;justify-content:space-between;gap:8px}
+  .silos h4 span:last-child{color:var(--teal);font-weight:700}
+  .silos .sr{margin:8px 0}
+  .silos .sr .t{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;margin-bottom:3px;gap:8px}
+  .silos .sr .t .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .silos .sr .t .pc{font-variant-numeric:tabular-nums}
+  .silos .sr .bkg{height:9px;border-radius:5px;background:#eceff0;overflow:hidden}
+  .silos .sr .bkg i{display:block;height:100%;border-radius:5px;transition:width .3s}
+  .silos .sr .st{font-size:9.5px;color:var(--muted);margin-top:2px}
+  .machines{position:absolute;left:12px;bottom:12px;width:236px;max-width:calc(100% - 24px);background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:11px;padding:9px 12px 10px;box-shadow:0 6px 18px rgba(15,60,56,.16);backdrop-filter:blur(2px)}
+  .machines h4{margin:0 0 6px;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:800;display:flex;justify-content:space-between;gap:8px}
+  .machines h4 span:last-child{color:var(--teal);font-weight:700}
+  .machines .mr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line);font-size:11.5px;font-weight:700}
+  .machines .mr:last-child{border-bottom:0}
+  .machines .mr .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pill2{font-size:9.5px;font-weight:800;padding:2px 9px;border-radius:20px;letter-spacing:.4px}
+  .p-on{background:#e7f4e8;color:var(--green)} .p-off{background:#fdecea;color:var(--red)} .p-unk{background:#eef2f1;color:var(--muted)}
+  .panel{position:absolute;right:12px;top:12px;width:300px;max-width:calc(100% - 24px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(15,60,56,.22);padding:14px;display:none}
+  .panel.show{display:block}
+  .panel h3{margin:0 0 2px;font-size:15px}
+  .panel .code{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .panel .zone{font-size:11px;color:var(--teal);font-weight:700;margin:6px 0 10px}
+  .panel .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .panel .row .k{color:var(--muted)}
+  .panel .row .v{font-weight:700;text-align:right}
+  .panel .badge{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;letter-spacing:.4px}
+  .b-green{background:#e7f4e8;color:var(--green)} .b-amber{background:#fff5e0;color:#b26a00} .b-red{background:#fdecea;color:var(--red)}
+  .panel .close{position:absolute;right:10px;top:10px;border:0;background:#f1f4f3;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:800;color:var(--muted)}
+  .panel a.btn{display:inline-block;margin-top:12px;background:var(--teal);color:#fff;text-decoration:none;font-weight:700;font-size:12px;padding:9px 14px;border-radius:8px}
+  .reasons{margin:8px 0 0;padding:0;list-style:none}
+  .reasons li{font-size:11.5px;color:var(--ink);padding:4px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px}
+  .reasons li b{color:var(--red)}
+  #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:13px}
+  footer{font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  @media (max-width:820px){.stage{height:56vh}.panel{width:260px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="logo">3D</div>
+      <div>
+        <div class="sub">Akij · ACCL — Cement Grinding (VRM)</div>
+        <h1>Factory Map — Workcenter Status Board</h1>
+        <div class="sub" style="text-transform:none;letter-spacing:.3px">See the plant. Read the status. Walk to the constraint.</div>
+      </div>
+    </div>
+    <div class="pill">IMPROVE&nbsp;|&nbsp;DIGITIZE&nbsp;|&nbsp;PREDICT&nbsp;|&nbsp;OPTIMIZE<br>3D Gemba — live workcenter tags</div>
+  </header>
+
+  <div class="bar">
+    <button id="btnDay" class="active" onclick="setPeriod('day')">Last day</button>
+    <button id="btnMtd" onclick="setPeriod('mtd')">Month to date</button>
+    <span class="sp"></span>
+    <div class="legend">
+      <span class="chip"><i class="swatch" style="background:var(--green2)"></i> On target / running</span>
+      <span class="chip"><i class="swatch" style="background:var(--amber2)"></i> Watch</span>
+      <span class="chip"><i class="swatch" style="background:var(--red2)"></i> Loss / below target</span>
+    </div>
+    <span class="sp"></span>
+    <span class="mlabel">Tag metric</span>
+    <button id="mOEE" onclick="setMetric('oee')">OEE %</button>
+    <button id="mProd" onclick="setMetric('prod')">Production MT</button>
+    <button id="mLive" class="active" onclick="setMetric('live')">Live TPH / Silo %</button>
+    <button id="mNpt" onclick="setMetric('npt')">Downtime min</button>
+    <span class="sp"></span>
+    <button id="btnRot" class="active" onclick="toggleRotate()">Auto-rotate</button>
+    <button onclick="resetView()">Reset view</button>
+    <div class="live"><span id="liveDot" class="dotlive off"></span><span id="liveTxt">Loading live data…</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="canvas"></canvas>
+    <div id="labels"></div>
+    <div class="hud">
+      <div class="stat"><div class="k">Net Production · Today</div><div class="v" id="hudNet">—</div><div class="s" id="hudNetS">good MT · gross &amp; target</div></div>
+      <div class="stat"><div class="k">Live · IBOS</div><div class="v" id="hudLive">—</div><div class="s" id="hudLiveS">silo levels · mill TPH</div></div>
+      <div class="stat"><div class="k">Plant OEE</div><div class="v" id="hudOee">—</div><div class="s" id="hudOeeS">vs 75% target</div></div>
+      <div class="stat"><div class="k">Workcenters</div><div class="v" id="hudWc">—</div><div class="s" id="hudWcS">RAG status</div></div>
+    </div>
+    <div class="machines" id="machines">
+      <h4><span>Machine Status · live</span><span id="machTs">—</span></h4>
+      <div id="machRows"></div>
+    </div>
+    <div class="silos" id="silos">
+      <h4><span>Silo Levels · live</span><span id="siloTs">—</span></h4>
+      <div id="siloRows"></div>
+    </div>
+    <div class="panel" id="panel">
+      <button class="close" onclick="closePanel()">×</button>
+      <div class="code" id="pCode"></div>
+      <h3 id="pName"></h3>
+      <div class="zone" id="pZone"></div>
+      <div id="pRows"></div>
+      <div id="pReasons"></div>
+      <a class="btn" id="pLink" href="#" target="_blank" rel="noopener">Open full OEE dashboard →</a>
+    </div>
+    <div id="err">3D engine unavailable. Check your internet connection (three.js is loaded from a CDN) and refresh.</div>
+  </div>
+
+  <footer>
+    <span>Source: ACCL VRM <i>Production Report</i> &amp; <i>VRM Breakdown</i> (Google Sheets) + <i>IBOS milldata</i> (silo levels &amp; mill TPH, live via bridge)</span>
+    <span>Tag metric = Live TPH/Silo % · OEE % · Production MT · Downtime min · colour = RAG · click a tag to drill down</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   WORKCENTER MODEL — Akij Cement (ACCL VRM plant)
+   Positions are (x, 0, z) on the plant floor; tagY = label height.
+   millKey  -> workcenter whose status comes from mill-level OEE
+   match    -> keywords matched against the Breakdown log (equipment downtime)
+   live     -> key in the IBOS live "milldata" payload (TPH / silo level %)
+   liveKind -> 'mill' (TPH, higher=better) | 'silo' (%, high=near full) | 'clinker' (low=risk)
+   ============================================================ */
+var WC = [
+  {id:'clnk',   code:'WC-RM-03', name:'Clinker Silo',                zone:'Raw material intake', type:'silo',     pos:[-52,0,-12], tagY:24, match:['clinker silo','clnk-silo'],                    millKey:null, live:'CLNK-SILO', liveKind:'clinker'},
+  {id:'hopper', code:'WC-RM-01', name:'Clinker Hopper',              zone:'Raw material intake', type:'hopper',   pos:[-42,0,6],   tagY:10, match:['clinker hopper'],                                 millKey:null},
+  {id:'belt511',code:'WC-RM-02', name:'Belt Conveyor 511WF150',      zone:'Raw material intake', type:'conveyor', pos:[-32,0,6],   tagY:6,  match:['511wf150','belt conveyor 511'],                     millKey:null},
+  {id:'bel513', code:'WC-TR-01', name:'Bucket Elevator 513 BE',      zone:'Material transport',  type:'elevator', pos:[-30,0,-22], tagY:15, match:['513 be','bucket elevator 513','513be'],             millKey:null},
+  {id:'vrm1',   code:'WC-GR-01', name:'VRM-1 — Loesche Mill',        zone:'Grinding',            type:'mill',     pos:[-14,0,-4],  tagY:21, match:null, millKey:'VRM-1', live:'loesche_TPH', liveKind:'mill'},
+  {id:'rf506',  code:'WC-GR-03', name:'Rotary Feeder 531 RF506',     zone:'Grinding / feed',     type:'feeder',   pos:[-14,0,12],  tagY:8,  match:['rotary feeder','531 rf','531rf'],                    millKey:null},
+  {id:'vrm2',   code:'WC-GR-02', name:'VRM-2 — FLS Mill',            zone:'Grinding',            type:'mill',     pos:[14,0,-4],   tagY:21, match:null, millKey:'VRM-2', live:'fls_TPH', liveKind:'mill'},
+  {id:'rf503',  code:'WC-GR-04', name:'Rotary Feeder 531 RF503',     zone:'Grinding / feed',     type:'feeder',   pos:[14,0,12],   tagY:8,  match:['rotary feeder','531 rf','531rf'],                    millKey:null},
+  {id:'bel514', code:'WC-TR-02', name:'Bucket Elevator 514 BE',      zone:'Material transport',  type:'elevator', pos:[2,0,-22],   tagY:15, match:['514 be','bucket elevator 514','514be'],             millKey:null},
+  {id:'silo1',  code:'WC-ST-01', name:'Cement Silo 1 (PCC)',         zone:'Storage',             type:'silo',     pos:[44,0,-2],   tagY:27, match:['silo-1','cement silo','silo full','silo almost full','warehouse block'], millKey:null, live:'SILO-1', liveKind:'silo'},
+  {id:'silo2',  code:'WC-ST-02', name:'Cement Silo 2 (PCC)',         zone:'Storage',             type:'silo',     pos:[44,0,12],   tagY:27, match:['silo-2'],                                          millKey:null, live:'SILO-2', liveKind:'silo'},
+  {id:'opc1',   code:'WC-ST-03', name:'OPC Silo 1',                  zone:'Storage',             type:'silo',     pos:[44,0,26],   tagY:27, match:['opc-1'],                                          millKey:null, live:'OPC-1',  liveKind:'silo'},
+  {id:'opc2',   code:'WC-ST-04', name:'OPC Silo 2',                  zone:'Storage',             type:'silo',     pos:[44,0,40],   tagY:27, match:['opc-2'],                                          millKey:null, live:'OPC-2',  liveKind:'silo'},
+  {id:'packing',code:'WC-DP-01', name:'Packing Plant & Dispatch',    zone:'Dispatch',            type:'building', pos:[44,0,-26],  tagY:17, match:['packing','dispatch','truck'],                       millKey:null}
+];
+
+var CFG = {
+  sheet:'1NzcGrUHk7N4FSVGpAp9ZQ_H7TbpmX92YTtaJSnMx8Hg',
+  gidPR:'0', gidBD:'482789258',
+  col:{date:1,mill:3,shift:7,target:9,out:10,ideal:11,op:17,planned:18,npt:20,run:21,wastage:36,good:38,nptCatStart:22},
+  bdCol:{date:1,cat:8,eq:9,reason:10,min:11},
+  targets:{A:90,P:86,Q:97,OEE:75},
+  link:'https://sanjeed-ferhan.github.io/accl-vrm-oee-dashboard/'
+};
+
+var DATA = null;      // { day:{}, mtd:{} }
+var PERIOD = 'day';
+var STATUS = {};      // id -> {rag, metric, value, unit, note, reasons:[]}
+
+/* ---------- CSV + date helpers ---------- */
+function parseCSV(text){
+  var rows=[],row=[],cur="",i=0,inQ=false;
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  while(i<text.length){var ch=text[i];
+    if(inQ){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i+=2;continue;} inQ=false;i++;continue;} cur+=ch;i++;continue; }
+    if(ch==='"'){inQ=true;i++;continue;}
+    if(ch===','){row.push(cur);cur="";i++;continue;}
+    if(ch==="\n"){row.push(cur);rows.push(row);row=[];cur="";i++;continue;}
+    cur+=ch;i++;
+  }
+  row.push(cur);rows.push(row);return rows;
+}
+function num(v){ if(v==null)return 0; var x=parseFloat(String(v).replace(/,/g,"")); return isNaN(x)?0:x; }
+function toDate(s){
+  if(!s)return null; s=String(s).trim(); if(!s)return null;
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if(m) return new Date(+m[3],+m[1]-1,+m[2]);
+  m=s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+  if(m){var mon={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}[m[2].toLowerCase()];return new Date(+m[3],mon,+m[1]);}
+  var d=new Date(s); return isNaN(d.getTime())?null:d;
+}
+function r1(x){return Math.round(x*10)/10;}
+function r0(x){return Math.round(x);}
+function key(d){return d.getFullYear()+"-"+((d.getMonth()+1)<10?"0":"")+(d.getMonth()+1)+"-"+(d.getDate()<10?"0":"")+d.getDate();}
+var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDU(d){return (d.getDate()<10?"0":"")+d.getDate()+"-"+MON[d.getMonth()].toUpperCase()+"-"+d.getFullYear();}
+function fmtM(d){return "01–"+(d.getDate()<10?"0":"")+d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear();}
+
+/* ---------- OEE aggregation ---------- */
+function aggSet(recs){
+  var op=0,planned=0,run=0,npt=0,out=0,good=0,target=0,idealOut=0,wast=0;
+  for(var i=0;i<recs.length;i++){var r=recs[i];
+    op+=r.op;planned+=r.planned;run+=r.run;npt+=r.npt;out+=r.out;good+=r.good;target+=r.target;idealOut+=r.ideal*r.out;wast+=(r.wast||0);}
+  var ppt=op-planned;
+  var A=ppt>0?run/ppt:0, P=run>0?idealOut/run:0, Q=out>0?good/out:0;
+  return {op:op,planned:planned,ppt:ppt,run:run,npt:npt,out:out,good:good,wast:wast,target:target,A:A,P:P,Q:Q,OEE:A*P*Q};
+}
+
+function buildData(prText,bdText){
+  var col=CFG.col, bdCol=CFG.bdCol, rows=parseCSV(prText), recs=[];
+  for(var i=1;i<rows.length;i++){var r=rows[i]; if(!r||r.length<=col.good) continue;
+    var d=toDate(r[col.date]); if(!d) continue;
+    var oOut=num(r[col.out]),oOp=num(r[col.op]),oRun=num(r[col.run]),oNpt=num(r[col.npt]);
+    if(oOut<=0&&oOp<=0&&oRun<=0&&oNpt<=0) continue;
+    recs.push({d:d,g:(r[col.mill]||"").trim(),out:oOut,ideal:num(r[col.ideal]),op:oOp,planned:num(r[col.planned]),
+      npt:oNpt,run:oRun,good:num(r[col.good]),wast:num(r[col.wastage]),target:num(r[col.target])});
+  }
+  if(!recs.length) return null;
+  var lastDay=recs[0].d;
+  for(var z=0;z<recs.length;z++){ if(recs[z].d>lastDay) lastDay=recs[z].d; }
+  var monthStart=new Date(lastDay.getFullYear(),lastDay.getMonth(),1);
+  var isDay=function(r){return key(r.d)===key(lastDay);};
+  var isMtd=function(r){return r.d>=monthStart&&r.d<=lastDay;};
+
+  var brow=parseCSV(bdText||""), bd=[];
+  for(var j=1;j<brow.length;j++){var b=brow[j]; if(!b||b.length<=bdCol.min) continue;
+    var dd=toDate(b[bdCol.date]); if(!dd) continue;
+    bd.push({d:dd,cat:(b[bdCol.cat]||"").trim(),eq:(b[bdCol.eq]||"").trim(),reason:(b[bdCol.reason]||"").trim(),min:num(b[bdCol.min])});
+  }
+
+  function groupByMill(set){var m={},o=[];for(var i=0;i<set.length;i++){var g=set[i].g||"(unspecified)";if(!m[g]){m[g]=[];o.push(g);}m[g].push(set[i]);}return {m:m,order:o};}
+  function millStats(set){
+    var g=groupByMill(set), out={};
+    g.order.forEach(function(n){var a=aggSet(g.m[n]);
+      var tgt=0; for(var k=0;k<g.m[n].length;k++) tgt+=g.m[n][k].target;
+      out[n]={OEE:r1(a.OEE*100),A:r1(a.A*100),P:r1(a.P*100),Q:r1(a.Q*100),out:r0(a.out),good:r0(a.good),target:r0(tgt),npt:r0(a.npt)};});
+    return out;
+  }
+  function eqDowntime(set){
+    var out={};
+    for(var i=0;i<set.length;i++){
+      var rec=set[i];
+      if((rec.cat||"").toLowerCase().indexOf("planned")>=0) continue;
+      var hay=(rec.eq+" "+rec.reason).toLowerCase();
+      for(var w=0;w<WC.length;w++){
+        var wc=WC[w]; if(!wc.match) continue;
+        for(var k=0;k<wc.match.length;k++){ if(hay.indexOf(wc.match[k])>=0){
+          if(!out[wc.id]) out[wc.id]={min:0,reasons:{}};
+          out[wc.id].min+=rec.min;
+          var rr=rec.reason||rec.eq||"(unspecified)";
+          out[wc.id].reasons[rr]=(out[wc.id].reasons[rr]||0)+rec.min;
+          break;
+        }}
+      }
+    }
+    return out;
+  }
+  var dayRecs=recs.filter(isDay), mtdRecs=recs.filter(isMtd);
+  var dayBd=bd.filter(function(b){return key(b.d)===key(lastDay);});
+  var mtdBd=bd.filter(function(b){return b.d>=monthStart&&b.d<=lastDay;});
+  function period(set, bset){
+    var a=aggSet(set);
+    return { mills:millStats(set), eq:eqDowntime(bset), oee:r1(a.OEE*100), A:r1(a.A*100), P:r1(a.P*100), Q:r1(a.Q*100),
+      npt:r0(a.npt), out:r0(a.out), good:r0(a.good), wastage:r1(a.wast), target:r0(a.target) };
+  }
+  return { day:period(dayRecs,dayBd), mtd:period(mtdRecs,mtdBd),
+    lastDay:lastDay, lastLabel:fmtDU(lastDay), monthLabel:MON[lastDay.getMonth()]+" "+lastDay.getFullYear(),
+    mtdRange:fmtM(lastDay) };
+}
+
+/* ---------- status + rendering of tags ---------- */
+function ragFromOEE(v){ if(v>=CFG.targets.OEE) return 'green'; if(v>=CFG.targets.OEE-15) return 'amber'; return 'red'; }
+function ragFromMin(m){ if(m<=5) return 'green'; if(m<60) return 'amber'; return 'red'; }
+function ragFromAch(a){ if(a>=100) return 'green'; if(a>=85) return 'amber'; return 'red'; }
+function ragForLive(kind, v, live){ if(kind==='silo'){ if(v>=90) return 'red'; if(v>=75) return 'amber'; return 'green'; } if(kind==='clinker'){ if(v<=15) return 'red'; if(v<=30) return 'amber'; return 'green'; } return (live===false)?'amber':(v>0?'green':'amber'); }
+function liveSub(kind, v){ if(kind==='silo'){ return v>=90?'silo nearly full — risk':(v>=75?'silo filling':'headroom OK'); } if(kind==='clinker'){ return v<=15?'clinker low — feed risk':(v<=30?'clinker getting low':'clinker OK'); } return 'live throughput'; }
+
+function applyPeriod(){
+  var p = (PERIOD==='day')?DATA.day:DATA.mtd;
+  var greens=0,ambers=0,reds=0;
+  WC.forEach(function(wc){
+    var prevLive = (STATUS[wc.id]&&STATUS[wc.id].m)?STATUS[wc.id].m.live:null;
+    if(wc.millKey){
+      var ms=p.mills[wc.millKey];
+      if(ms){
+        var ach = ms.target>0 ? ms.out/ms.target*100 : 0;
+        var ragO = ragFromOEE(ms.OEE);
+        var m = {
+          oee:{v:ms.OEE,unit:'% OEE',rag:ragO,sub:'A '+ms.A+' · P '+ms.P+' · Q '+ms.Q},
+          prod:{v:ms.out,unit:'MT',rag:ragFromAch(ach),sub:'of '+ms.target.toLocaleString()+' MT · '+ach.toFixed(0)+'%'},
+          npt:{v:ms.npt,unit:'min NPT',rag:ragFromMin(ms.npt),sub:'unplanned (mill)'},
+          live:prevLive
+        };
+        STATUS[wc.id]={rag:ragO,m:m,millKey:wc.millKey,
+          rows:[['Output (gross)',ms.out.toLocaleString()+' / '+ms.target.toLocaleString()+' MT'],['Net production (good)',(ms.good!=null?ms.good:ms.out).toLocaleString()+' MT'],['Achievement',ach.toFixed(1)+'%'],
+                ['OEE',ms.OEE.toFixed(1)+'%'],['Availability',ms.A.toFixed(1)+'%'],['Performance',ms.P.toFixed(1)+'%'],['Quality',ms.Q.toFixed(1)+'%'],
+                ['Unplanned NPT (mill)',ms.npt.toLocaleString()+' min']], reasons:[]};
+      } else { STATUS[wc.id]={rag:'green',m:{oee:null,prod:null,npt:{v:0,unit:'min NPT',rag:'green',sub:'no data'},live:prevLive},rows:[],reasons:[]}; }
+    } else {
+      var e=p.eq[wc.id]||{min:0,reasons:{}};
+      var rag=ragFromMin(e.min);
+      var rs=Object.keys(e.reasons).map(function(k){return [k,e.reasons[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+      STATUS[wc.id]={rag:rag,m:{oee:null,prod:null,npt:{v:e.min,unit:'min NPT',rag:rag,sub:(e.min>0?'unplanned downtime':'clear')},live:prevLive},
+        rows:[['Unplanned downtime',e.min.toLocaleString()+' min'],['Status',rag==='green'?'Running / clear':(rag==='amber'?'Watch — minor stops':'Down / loss')]], reasons:rs};
+    }
+    if(STATUS[wc.id].rag==='green')greens++; else if(STATUS[wc.id].rag==='amber')ambers++; else reds++;
+  });
+  var net = (p.good!=null ? p.good : p.out);
+  var nach = p.target>0 ? net/p.target*100 : 0;
+  document.getElementById('hudNet').textContent = net.toLocaleString()+' MT';
+  document.getElementById('hudNet').style.color = ragFromAch(nach)==='green'?'var(--green)':(ragFromAch(nach)==='amber'?'#b26a00':'var(--red)');
+  document.getElementById('hudNetS').textContent = 'gross '+p.out.toLocaleString()+' MT · waste '+(p.wastage!=null?p.wastage.toLocaleString():'—')+' MT · '+nach.toFixed(0)+'% of '+p.target.toLocaleString();
+  document.getElementById('hudOee').textContent = p.oee.toFixed(1)+'%';
+  document.getElementById('hudOee').style.color = p.oee>=CFG.targets.OEE?'var(--green)':'var(--red)';
+  document.getElementById('hudOeeS').textContent = 'vs '+CFG.targets.OEE+'% target';
+  document.getElementById('hudWc').innerHTML = '<span style="color:var(--green)">'+greens+'</span> · <span style="color:#b26a00">'+ambers+'</span> · <span style="color:var(--red)">'+reds+'</span>';
+  document.getElementById('hudWcS').textContent = 'green · amber · red';
+  if(LIVE) applyLive(LIVE); else renderTags();
+}
+
+/* ---------- 3D scene ---------- */
+var renderer,scene,camera,stage,canvasEl,labelsEl,clock;
+var AZ=-0.62, EL=0.95, DIST=118;
+var camTarget=null, dragging=false, lastX=0,lastY=0, autoRotate=true;
+var anchors=[]; // {wc, vec3}
+var SILOMESH={}; // id -> {shell, fill, h, r}
+
+function init3D(){
+  canvasEl=document.getElementById('canvas'); stage=document.getElementById('stage'); labelsEl=document.getElementById('labels');
+  renderer=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  scene=new THREE.Scene();
+  scene.fog=new THREE.Fog(0xbcd3cf,140,340);
+  camera=new THREE.PerspectiveCamera(45,1,0.1,1200);
+  camTarget=new THREE.Vector3(0,8,0);
+
+  var hemi=new THREE.HemisphereLight(0xffffff,0x8aa3a0,0.95); scene.add(hemi);
+  var dir=new THREE.DirectionalLight(0xffffff,0.85); dir.position.set(60,110,40); scene.add(dir);
+  var dir2=new THREE.DirectionalLight(0xffffff,0.35); dir2.position.set(-70,60,-50); scene.add(dir2);
+
+  buildPlant();
+  resize(); window.addEventListener('resize',resize);
+  bindControls();
+  animate();
+}
+function mat(color,opts){var o=opts||{};return new THREE.MeshStandardMaterial({color:color,roughness:(o.r!=null?o.r:0.7),metalness:(o.m!=null?o.m:0.15),transparent:!!o.t,opacity:(o.o!=null?o.o:1)});}
+function box(w,h,d,x,z,color,o){var g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
+function cyl(rt,rb,h,x,z,color,o){var g=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
+function cone(r,h,x,z,color,o){var g=new THREE.Mesh(new THREE.ConeGeometry(r,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
+
+function buildPlant(){
+  // floor
+  var floor=new THREE.Mesh(new THREE.BoxGeometry(150,1.5,110),mat(0x9fb8b4,{r:0.95}));
+  floor.position.set(0,-0.75,0); scene.add(floor);
+  var grid=new THREE.GridHelper(150,50,0x6f8d89,0x84a09c); grid.position.y=0.02; scene.add(grid);
+  // roads
+  box(150,0.1,7,0,4,0x8d8f8c,{r:1}); box(7,0.1,110,0,42,0x8d8f8c,{r:1});
+
+  // ---- Raw intake: clinker hopper + belt conveyor ----
+  cone(5.2,9,-42,6,0xb9c2c7,{m:0.25}); cyl(2.6,2.6,3,-42,6,0x94a0a6);
+  var belt=box(20,0.9,3.0,-32,6,0x6d7b82,{m:0.35});
+  for(var i=-41;i<=-23;i+=3){ box(2.2,1.1,3.4,i,6,0x55636a); }
+
+  // ---- Mills ----
+  buildMill(-14,-4); buildMill(14,-4);
+
+  // ---- Rotary feeders (feed hoppers) ----
+  cyl(2.2,2.2,6,-14,12,0xcdd6da); cyl(2.2,2.2,6,14,12,0xcdd6da);
+  cone(2.6,3,-14,12,0x8fa0a7); cone(2.6,3,14,12,0x8fa0a7);
+
+  // ---- Bucket elevators ----
+  buildElevator(-30,-22); buildElevator(2,-22);
+
+  // ---- Cement / OPC / clinker silos (translucent shell + coloured fill level) ----
+  buildSilo(44,-2,'silo1',4.6,24);
+  buildSilo(44,12,'silo2',4.6,24);
+  buildSilo(44,26,'opc1',4.6,24);
+  buildSilo(44,40,'opc2',4.6,24);
+  buildSilo(-52,-12,'clnk',6.0,22);
+  // silo discharge line
+  box(1.4,1.4,46,44,19,0x80929a);
+
+  // ---- Packing plant building ----
+  box(22,15,18,44,-26,0xd7dde0); box(24,1.2,20,44,-26,0x0f5c56);
+  box(7,7,7,58,-26,0xb9c2c7); // truck loading bay
+  // trucks
+  box(6,3,2.6,58,-14,0x0b7a6f); box(3,3.4,2.6,54,-14,0x0f5c56);
+
+  // ---- pipe / utility racks (decor) ----
+  for(var k=-40;k<=40;k+=16){ box(0.6,9,0.6,k,-12,0x8fa0a7); }
+  box(82,0.6,0.6,0,-12,0x9fb0b6,{m:0.3}); box(82,0.6,0.6,0,-13.5,0x9fb0b6,{m:0.3});
+
+  // anchors for tags
+  anchors=[];
+  WC.forEach(function(wc){ anchors.push({wc:wc, v:new THREE.Vector3(wc.pos[0],wc.tagY,wc.pos[2])}); });
+}
+function buildMill(x,z){
+  var base=box(20,1.4,18,x,z,0x8d9aa0);
+  cyl(6.2,6.2,16,x,z,0xb4bec4,{m:0.35});
+  cyl(6.6,6.6,1.2,x,z,0x0f5c56);
+  cyl(6.6,6.6,1.2,x,z+0.02,0x0f5c56); // ring accent
+  var g2=cyl(6.6,6.6,1.2,x,z,0x0b7a6f); g2.position.y=12;
+  // motor house
+  box(5,4,5,x-9,z+8,0x9aa7ae); box(3,3,3,x+9,z-8,0x9aa7ae);
+  // drive pipe
+  box(10,0.7,0.7,x-4.5,z+8,0x80929a);
+}
+function buildElevator(x,z){
+  box(4,17,4,x,z,0xcfd6da);
+  box(4.6,1.2,4.6,x,z,0x0f5c56);
+  cyl(1.4,1.4,2.4,x,z,0x8f9aa0); cyl(1.4,1.4,2.4,x,z,0x8f9aa0).position.y=17;
+  // feeding pipe to mill
+  box(10,0.7,0.7,x+7,z,0x80929a).position.y=15;
+}
+
+/* ---------- silos: translucent shell + coloured fill ---------- */
+function levelColor(f){ var c=new THREE.Color(); c.setHSL(0.33*(1-Math.max(0,Math.min(1,f))), 0.78, 0.46); return c; }
+function buildSilo(x,z,id,r,h){
+  var shell=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,30),
+    new THREE.MeshStandardMaterial({color:0xd7dfe3,roughness:0.5,metalness:0.12,transparent:true,opacity:0.40,depthWrite:false}));
+  shell.position.set(x,h/2,z); scene.add(shell);
+  var fill=new THREE.Mesh(new THREE.CylinderGeometry(r-0.22,r-0.22,1,30),
+    new THREE.MeshStandardMaterial({color:0x12b76a,roughness:0.55,metalness:0.1,emissive:0x0a3f2c,emissiveIntensity:0.35}));
+  fill.position.set(x,0.5,z); scene.add(fill);
+  var roof=new THREE.Mesh(new THREE.ConeGeometry(r+0.25,4.5,30),mat(0x9aa4aa,{m:0.3})); roof.position.set(x,h+2.25,z); scene.add(roof);
+  var neck=cyl(1.1,1.1,3,x,z,0x8f9aa0); neck.position.y=h+4.5;
+  // base ring
+  var ring=new THREE.Mesh(new THREE.CylinderGeometry(r+0.35,r+0.35,1.2,30),mat(0x7f8b91,{m:0.3})); ring.position.set(x,0.6,z); scene.add(ring);
+  SILOMESH[id]={shell:shell,fill:fill,h:h,r:r};
+}
+function updateSiloLevels(){
+  WC.forEach(function(wc){
+    if(!wc.live || (wc.liveKind!=='silo' && wc.liveKind!=='clinker')) return;
+    var m=SILOMESH[wc.id]; if(!m) return;
+    var s=STATUS[wc.id], L=s&&s.m&&s.m.live;
+    var v=L?L.v:0;
+    var f=Math.max(0,Math.min(1,v/100));
+    var fh=Math.max(0.4,m.h*f);
+    m.fill.scale.y=fh; m.fill.position.y=fh/2;
+    var col=levelColor(f);
+    m.fill.material.color.copy(col);
+    m.fill.material.emissive.copy(col).multiplyScalar(0.35);
+    m.shell.material.color.copy(col).lerp(new THREE.Color(0xffffff),0.72);
+  });
+}
+
+/* ---------- tags ---------- */
+function buildTagDom(){
+  labelsEl.innerHTML='';
+  WC.forEach(function(wc){
+    var el=document.createElement('div');
+    el.className='wc-tag'; el.id='tag-'+wc.id; el.title=wc.code+' · '+wc.name+' · '+wc.zone;
+    el.innerHTML='<div class="code">'+wc.code+'</div><div class="nm">'+wc.name+'</div><div class="val" id="v-'+wc.id+'">—</div><div class="sub" id="s-'+wc.id+'"></div><div class="stem"></div><div class="foot"></div>';
+    el.addEventListener('click',function(){ openPanel(wc.id); });
+    labelsEl.appendChild(el);
+  });
+}
+var METRIC='live';
+function metricOf(s){
+  var m=s.m||{};
+  var mm=m[METRIC];
+  if(mm==null) mm=m.npt;          // equipment has no OEE/production -> show downtime
+  return mm;
+}
+function renderTags(){
+  WC.forEach(function(wc){
+    var s=STATUS[wc.id]; if(!s) return;
+    var el=document.getElementById('tag-'+wc.id); if(!el) return;
+    var mm=metricOf(s);
+    el.className='wc-tag rag-'+mm.rag;
+    var v=document.getElementById('v-'+wc.id);
+    if(mm.v==null){ v.textContent='no data'; v.className='val'; }
+    else {
+      var txt = (METRIC==='oee'||METRIC==='live') ? mm.v.toFixed(1) : mm.v.toLocaleString(undefined,{maximumFractionDigits:1});
+      v.innerHTML='<span class="v-'+mm.rag+'">'+txt+'</span><small>'+mm.unit+'</small>';
+    }
+    document.getElementById('s-'+wc.id).textContent=mm.sub||'';
+  });
+}
+function setMetric(m){
+  METRIC=m;
+  document.getElementById('mOEE').classList.toggle('active',m==='oee');
+  document.getElementById('mProd').classList.toggle('active',m==='prod');
+  document.getElementById('mLive').classList.toggle('active',m==='live');
+  document.getElementById('mNpt').classList.toggle('active',m==='npt');
+  if(DATA) renderTags();
+}
+
+/* ---------- projection loop ---------- */
+function project(){
+  var w=stage.clientWidth,h=stage.clientHeight;
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+  var v=new THREE.Vector3(), items=[];
+  anchors.forEach(function(a){
+    var el=document.getElementById('tag-'+a.wc.id); if(!el) return;
+    v.copy(a.v).project(camera);
+    if(v.z>1){ el.style.display='none'; return; }
+    el.style.display='';
+    var sx=(v.x*0.5+0.5)*w, sy=(-v.y*0.5+0.5)*h;
+    var vis=(v.x>-1.2&&v.x<1.2&&v.y>-1.2&&v.y<1.2);
+    items.push({el:el,sx:sx,sy:sy,z:a.wc.tagY,vz:v.z,vis:vis});
+  });
+  // de-overlap: nudge labels up if they collide
+  items.sort(function(p,q){return q.vz-p.vz;});
+  var placed=[];
+  items.forEach(function(it){
+    var h2=it.el.offsetHeight||52, w2=it.el.offsetWidth||132;
+    var x0=it.sx-w2/2, x1=it.sx+w2/2, yBase=it.sy-h2, guard=0;
+    while(guard++<40){
+      var hit=false;
+      for(var i=0;i<placed.length;i++){ var p=placed[i];
+        if(x0<p.x1+4 && x1>p.x0-4 && yBase<p.y1+4 && (yBase+h2)>p.y0-4){ hit=true; break; }
+      }
+      if(!hit) break;
+      yBase-=9;
+    }
+    yBase=Math.max(6,yBase);
+    it.el.style.left=it.sx+'px';
+    it.el.style.top=(yBase+h2)+'px';
+    it.el.style.zIndex=Math.round((1-it.vz)*1000);
+    it.el.style.opacity=it.vis?'1':'0.28';
+    placed.push({x0:x0,x1:x1,y0:yBase,y1:yBase+h2});
+  });
+}
+function animate(){
+  requestAnimationFrame(animate);
+  if(autoRotate&&!dragging) AZ+=0.0016;
+  var sx=Math.sin(EL)*Math.cos(AZ), sy=Math.cos(EL), sz=Math.sin(EL)*Math.sin(AZ);
+  camera.position.set(camTarget.x+DIST*sx, camTarget.y+DIST*sy, camTarget.z+DIST*sz);
+  camera.lookAt(camTarget);
+  renderer.render(scene,camera);
+  project();
+}
+function resize(){ var w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); }
+function bindControls(){
+  canvasEl.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;lastY=e.clientY;canvasEl.setPointerCapture(e.pointerId);});
+  canvasEl.addEventListener('pointermove',function(e){ if(!dragging)return;
+    AZ+=(e.clientX-lastX)*0.006; EL-=(e.clientY-lastY)*0.006;
+    EL=Math.max(0.28,Math.min(1.45,EL)); lastX=e.clientX;lastY=e.clientY;});
+  canvasEl.addEventListener('pointerup',function(e){dragging=false;});
+  canvasEl.addEventListener('pointerleave',function(){dragging=false;});
+  canvasEl.addEventListener('wheel',function(e){e.preventDefault(); DIST=Math.max(45,Math.min(230,DIST+e.deltaY*0.08));},{passive:false});
+}
+function toggleRotate(){ autoRotate=!autoRotate; document.getElementById('btnRot').classList.toggle('active',autoRotate); }
+function resetView(){ AZ=-0.62; EL=0.95; DIST=118; }
+
+/* ---------- drill panel ---------- */
+function openPanel(id){
+  var wc=WC.filter(function(w){return w.id===id;})[0]; var s=STATUS[id]; if(!wc||!s) return;
+  currentPanel=id;
+  document.getElementById('pCode').textContent=wc.code;
+  document.getElementById('pName').textContent=wc.name;
+  document.getElementById('pZone').innerHTML='Zone: '+wc.zone+' &nbsp; <span class="badge b-'+s.rag+'">'+(s.rag==='green'?'ON TARGET':s.rag==='amber'?'WATCH':'LOSS')+'</span>';
+  var rows='';
+  if(s.m&&s.m.live){
+    rows+='<div class="row"><span class="k">Live · '+(wc.liveKind==='mill'?'throughput':'level')+'</span><span class="v" style="color:var(--teal)">'+s.m.live.v.toFixed(2)+' '+s.m.live.unit+'</span></div>';
+  }
+  rows+=(s.rows||[]).map(function(r){return '<div class="row"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';}).join('');
+  rows+='<div class="row"><span class="k">Period</span><span class="v">'+(PERIOD==='day'?DATA.lastLabel:DATA.mtdRange)+'</span></div>';
+  if(LIVE_AT) rows+='<div class="row"><span class="k">IBOS updated</span><span class="v">'+new Date(LIVE_AT).toLocaleTimeString()+'</span></div>';
+  document.getElementById('pRows').innerHTML=rows;
+  var rsn=(s.reasons&&s.reasons.length)? '<div style="font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:10px">Top downtime reasons</div><ul class="reasons">'+
+    s.reasons.map(function(r){return '<li><span>'+r[0]+'</span><b>'+r[1].toLocaleString()+' min</b></li>';}).join('')+'</ul>' : '';
+  document.getElementById('pReasons').innerHTML=rsn;
+  document.getElementById('pLink').href=CFG.link;
+  document.getElementById('panel').classList.add('show');
+}
+function closePanel(){ document.getElementById('panel').classList.remove('show'); currentPanel=null; }
+
+/* ---------- period toggle ---------- */
+function setPeriod(p){
+  PERIOD=p;
+  document.getElementById('btnDay').classList.toggle('active',p==='day');
+  document.getElementById('btnMtd').classList.toggle('active',p==='mtd');
+  if(DATA) applyPeriod();
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  labelsEl=document.getElementById('labels');
+  buildTagDom();
+  renderSilos();
+  renderMachines();
+  try{ init3D(); }
+  catch(e){ document.getElementById('err').style.display='flex'; console.error(e); }
+  updateSiloLevels();
+  fetchLive();
+  fetchIbosLive();
+  setInterval(fetchIbosLive, 10000);
+}
+function setLive(ok,txt){
+  document.getElementById('liveDot').className='dotlive'+(ok?'':' off');
+  document.getElementById('liveTxt').textContent=txt;
+}
+function fetchSheets(gid){
+  var rel='/api/sheets?gid='+gid, loc='http://localhost:8787/api/sheets?gid='+gid,
+      direct="https://docs.google.com/spreadsheets/d/"+CFG.sheet+"/export?format=csv&gid="+gid;
+  var urls = (location.protocol==='file:') ? [loc,direct] : [rel,loc,direct];
+  return (function next(i){
+    if(i>=urls.length) return Promise.reject(new Error('no sheet source reachable'));
+    return fetch(urls[i],{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+      .then(function(t){ if(!t||t.indexOf('<')===0) throw new Error('bad response'); return t; })
+      .catch(function(){ return next(i+1); });
+  })(0);
+}
+function fetchLive(){
+  setLive(false,'Loading live data…');
+  Promise.all([ fetchSheets(CFG.gidPR), fetchSheets(CFG.gidBD) ]).then(function(res){
+    var built=buildData(res[0],res[1]);
+    if(!built) throw new Error('no rows');
+    DATA=built;
+    document.getElementById('btnDay').textContent='Last day · '+built.lastLabel;
+    document.getElementById('btnMtd').textContent='Month to date · '+built.monthLabel;
+    applyPeriod();
+    if(!LIVE) setLive(true,'Live · '+built.lastLabel+' · '+new Date().toLocaleTimeString());
+  }).catch(function(e){
+    DATA=fallback(); applyPeriod();
+    if(LIVE) setLive(true,'IBOS live · OEE snapshot ('+e.message+')');
+    else setLive(false,'Offline snapshot ('+e.message+')');
+  });
+}
+/* ---------- IBOS live bridge (silo levels + mill TPH + machine status) ---------- */
+var LIVE=null, LIVE_AT=0, LIVE_URL=null, currentPanel=null, MACHSTATUS=null;
+var MACHINES=[
+  ['loesche','LOESCHE Mill'],['fls','FLS Mill'],
+  ['packer1','Packer 1'],['packer2','Packer 2'],['packer3','Packer 3'],['packer4','Packer 4'],['packer5','Packer 5']
+];
+function fetchIbosLive(){
+  var urls = (location.protocol==='file:') ? ['http://localhost:8787/api/live','/api/live'] : ['/api/live','http://localhost:8787/api/live'];
+  (function tryNext(i){
+    if(i>=urls.length){ ibosStatus(false,'IBOS bridge offline · run: node live-server.js'); return; }
+    fetch(urls[i],{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(j){ if(!j||!j.milldata) throw new Error('no milldata'); LIVE_URL=urls[i]; ibosStatus(true,null); applyLive(j.milldata, j.status); })
+      .catch(function(){ tryNext(i+1); });
+  })(0);
+}
+function ibosStatus(ok,msg){
+  document.getElementById('liveDot').className='dotlive'+(ok?'':' off');
+  if(ok){ document.getElementById('liveTxt').textContent='IBOS live · '+new Date().toLocaleTimeString(); }
+  else if(msg){ document.getElementById('liveTxt').textContent=msg; renderSilos(); renderMachines(); }
+}
+function renderMachines(st){
+  var host=document.getElementById('machRows'); if(!host) return;
+  st=st||MACHSTATUS;
+  var rows=MACHINES.map(function(m){
+    var s=st&&st[m[0]];
+    var on=s?s.on:null;
+    var cls=(on===null)?'p-unk':(on?'p-on':'p-off');
+    var txt=(on===null)?'—':(on?'ON':'OFF');
+    return '<div class="mr"><span class="nm">'+m[1]+'</span><span class="pill2 '+cls+'">'+txt+'</span></div>';
+  }).join('');
+  var g=st&&st.grid;
+  if(g) rows+='<div class="mr"><span class="nm">Grid supply</span><span class="pill2 '+(g.on?'p-on':'p-off')+'">'+(g.on?'ON':'OFF')+'</span></div>';
+  host.innerHTML=rows;
+  document.getElementById('machTs').textContent = st? new Date().toLocaleTimeString() : 'offline';
+}
+function renderSilos(){
+  var host=document.getElementById('siloRows'); if(!host) return;
+  var rows='';
+  WC.forEach(function(wc){
+    if(!wc.live || (wc.liveKind!=='silo' && wc.liveKind!=='clinker')) return;
+    var s=STATUS[wc.id], mm=s&&s.m&&s.m.live;
+    var v=mm?mm.v:null, rag=mm?mm.rag:'green';
+    var col = rag==='red'?'#ef4444':(rag==='amber'?'#f4b740':'#12b76a');
+    var pct = v==null?0:Math.max(0,Math.min(100,v));
+    rows+='<div class="sr"><div class="t"><span class="nm">'+wc.name+'</span><span class="pc" style="color:'+col+'">'+(v==null?'—':v.toFixed(1)+'%')+'</span></div>'+
+      '<div class="bkg"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i></div>'+
+      '<div class="st">'+(mm?(mm.sub||''):'waiting for IBOS…')+'</div></div>';
+  });
+  host.innerHTML=rows||'<div class="st">No silos configured.</div>';
+  document.getElementById('siloTs').textContent = LIVE_AT? new Date(LIVE_AT).toLocaleTimeString() : 'offline';
+}
+function applyLive(md, st){
+  LIVE=md; LIVE_AT=Date.now();
+  if(st) MACHSTATUS=st;
+  WC.forEach(function(wc){
+    if(!wc.live) return;
+    var v=parseFloat(md[wc.live]); if(!isFinite(v)) return;
+    var kind=wc.liveKind||'mill';
+    if(!STATUS[wc.id]) STATUS[wc.id]={rag:'green',m:{oee:null,prod:null,npt:{v:0,unit:'min NPT',rag:'green',sub:'—'},live:null},rows:[],reasons:[]};
+    STATUS[wc.id].m.live={v:v,unit:(kind==='mill'?'TPH':'% level'),rag:ragForLive(kind,v,null),sub:liveSub(kind,v)};
+  });
+  // overlay ON/OFF status on the two mills
+  if(MACHSTATUS){
+    [['vrm1','loesche'],['vrm2','fls']].forEach(function(p){
+      var s=STATUS[p[0]], m=MACHSTATUS[p[1]];
+      if(s&&s.m&&s.m.live&&m){ s.m.live.sub=(m.on?'RUNNING':'STOPPED')+' · '+s.m.live.unit; if(!m.on) s.m.live.rag='red'; }
+    });
+  }
+  var fls=parseFloat(md['fls_TPH']), loe=parseFloat(md['loesche_TPH']);
+  document.getElementById('hudLive').innerHTML=(isFinite(fls)?fls.toFixed(0):'—')+' / '+(isFinite(loe)?loe.toFixed(0):'—');
+  document.getElementById('hudLiveS').textContent='FLS / Loesche TPH · S1 '+md['SILO-1']+'% · CLNK '+md['CLNK-SILO']+'%';
+  renderTags();
+  renderSilos();
+  renderMachines();
+  updateSiloLevels();
+  if(currentPanel) openPanel(currentPanel);
+}
+function fallback(){
+  var mills={ 'VRM-1':{OEE:74.3,A:88.2,P:86.9,Q:97,out:2453,good:2380,target:3201,npt:170},
+              'VRM-2':{OEE:79.1,A:88.9,P:91.8,Q:97,out:4122,good:4040,target:5052,npt:160} };
+  var eq={ rf506:{min:40,reasons:{'O01-Jam':40}}, vrm1Eq:{min:0,reasons:{}}, silo:{min:0,reasons:{}} };
+  var d=new Date();
+  function period(){return {mills:mills,eq:eq,oee:76.7,A:88.5,P:89.4,Q:97,npt:330,out:6575,good:6420,wastage:155,target:8253};}
+  return {day:period(),mtd:period(),lastDay:d,lastLabel:fmtDU(d),monthLabel:MON[d.getMonth()]+' '+d.getFullYear(),mtdRange:fmtM(d)};
+}
+if(window.THREE){ boot(); }
+else { document.getElementById('err').style.display='flex'; }
+</script>
+</body>
+</html>

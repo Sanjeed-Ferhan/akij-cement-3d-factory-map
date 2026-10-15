@@ -1,0 +1,11 @@
+# IBOS bridge (contains credentials — keep local, do not publish)
+live-server.js
+
+# local launcher
+start-bridge.bat
+
+# local/editor artifacts
+logs/
+.playwright-mcp/
+node_modules/
+*.log
