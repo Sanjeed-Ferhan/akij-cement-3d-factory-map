@@ -221,7 +221,8 @@ var CFG = {
   col:{date:1,mill:3,shift:7,target:9,out:10,ideal:11,op:17,planned:18,npt:20,run:21,wastage:36,good:38,nptCatStart:22},
   bdCol:{date:1,cat:8,eq:9,reason:10,min:11},
   targets:{A:90,P:86,Q:97,OEE:75},
-  link:'https://sanjeed-ferhan.github.io/accl-vrm-oee-dashboard/'
+  link:'https://sanjeed-ferhan.github.io/accl-vrm-oee-dashboard/',
+  livePublic:'https://raw.githubusercontent.com/Sanjeed-Ferhan/akij-cement-3d-factory-map/live-data/live.json'
 };
 
 var DATA = null;      // { day:{}, mtd:{} }
@@ -717,19 +718,29 @@ var MACHINES=[
   ['packer1','Packer 1'],['packer2','Packer 2'],['packer3','Packer 3'],['packer4','Packer 4'],['packer5','Packer 5']
 ];
 function fetchIbosLive(){
-  var urls = (location.protocol==='file:') ? ['http://localhost:8787/api/live','/api/live'] : ['/api/live','http://localhost:8787/api/live'];
+  var pub = CFG.livePublic + '?_=' + Date.now();
+  var same='/api/live', loc='http://localhost:8787/api/live';
+  var urls = (location.protocol==='file:') ? [loc,pub,same]
+           : (location.protocol==='https:') ? [loc,pub,same]
+           : [same,loc,pub];
   (function tryNext(i){
     if(i>=urls.length){ ibosStatus(false,'IBOS bridge offline · run: node live-server.js');
       if(!AUTO_METRIC_SWITCHED && METRIC==='live'){ AUTO_METRIC_SWITCHED=true; setMetric('oee'); }
       return; }
     fetch(urls[i],{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(function(j){ if(!j||!j.milldata) throw new Error('no milldata'); LIVE_URL=urls[i]; ibosStatus(true,null); applyLive(j.milldata, j.status); })
+      .then(function(j){ if(!j||!j.milldata) throw new Error('no milldata');
+        LIVE_URL=urls[i];
+        LIVE_AT = j.lastAt || Date.now();
+        ibosStatus(true,null);
+        applyLive(j.milldata, j.status, LIVE_AT); })
       .catch(function(){ tryNext(i+1); });
   })(0);
 }
 function ibosStatus(ok,msg){
   document.getElementById('liveDot').className='dotlive'+(ok?'':' off');
-  if(ok){ document.getElementById('liveTxt').textContent='IBOS live · '+new Date().toLocaleTimeString(); }
+  if(ok){ var t=LIVE_AT?new Date(LIVE_AT).toLocaleTimeString():new Date().toLocaleTimeString();
+    var age=LIVE_AT?(Date.now()-LIVE_AT)/60000:0;
+    document.getElementById('liveTxt').textContent='IBOS live · '+t+(age>15?' · delayed ~'+Math.round(age)+' min':''); }
   else if(msg){ document.getElementById('liveTxt').textContent=msg; renderSilos(); renderMachines(); }
 }
 function renderMachines(st){
@@ -763,8 +774,8 @@ function renderSilos(){
   host.innerHTML=rows||'<div class="st">No silos configured.</div>';
   document.getElementById('siloTs').textContent = LIVE_AT? new Date(LIVE_AT).toLocaleTimeString() : 'offline';
 }
-function applyLive(md, st){
-  LIVE=md; LIVE_AT=Date.now();
+function applyLive(md, st, at){
+  LIVE=md; LIVE_AT=at||Date.now();
   if(st) MACHSTATUS=st;
   WC.forEach(function(wc){
     if(!wc.live) return;

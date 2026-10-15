@@ -1,0 +1,52 @@
+name: IBOS live data
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ibos-live
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Collect IBOS live data
+        env:
+          IBOS_USER: ${{ secrets.IBOS_USER }}
+          IBOS_PASS: ${{ secrets.IBOS_PASS }}
+        run: node collect-live.mjs "$RUNNER_TEMP/live.json"
+
+      - name: Publish to live-data branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          if [ ! -f "$RUNNER_TEMP/live.json" ]; then echo "no data file"; exit 1; fi
+          # ensure the data branch exists (branch off main)
+          if ! gh api "repos/$REPO/git/refs/heads/live-data" --jq .object.sha >/dev/null 2>&1; then
+            MAIN=$(gh api "repos/$REPO/git/refs/heads/main" --jq .object.sha)
+            gh api --method POST "repos/$REPO/git/refs" -f ref="refs/heads/live-data" -f sha="$MAIN" >/dev/null
+          fi
+          FILESHA=$(gh api "repos/$REPO/contents/live.json?ref=live-data" --jq .sha 2>/dev/null || true)
+          CONTENT=$(base64 -w0 "$RUNNER_TEMP/live.json")
+          if [ -n "$FILESHA" ]; then
+            gh api --method PUT "repos/$REPO/contents/live.json" \
+              -f message="live data $(date -u +%FT%TZ)" -f content="$CONTENT" -f branch=live-data -f sha="$FILESHA" >/dev/null
+          else
+            gh api --method PUT "repos/$REPO/contents/live.json" \
+              -f message="live data $(date -u +%FT%TZ)" -f content="$CONTENT" -f branch=live-data >/dev/null
+          fi
+          echo "published live.json to live-data"
