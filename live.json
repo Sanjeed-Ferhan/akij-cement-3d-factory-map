@@ -1,46 +1,46 @@
 {
  "ok": true,
  "connected": true,
- "lastAt": 1792060251123,
+ "lastAt": 1792060312266,
  "milldata": {
-  "fls_TPH": "180.66",
-  "SILO-1": "23.51",
+  "fls_TPH": "181.82",
+  "SILO-1": "23.44",
   "loesche_TPH": "0.00",
-  "OPC-1": "64.43",
+  "OPC-1": "64.70",
   "SILO-2": "31.89",
-  "CLNK-SILO": "89.41",
-  "OPC-2": "22.14"
+  "CLNK-SILO": "89.38",
+  "OPC-2": "22.33"
  },
  "status": {
   "loesche": {
    "on": false,
    "topic": "loesche.status",
-   "at": 1792060251124
-  },
-  "grid": {
-   "on": true,
-   "topic": "GRID.status",
-   "at": 1792060251124
-  },
-  "packer3": {
-   "on": true,
-   "topic": "P3",
-   "at": 1792060248455
+   "at": 1792060312266
   },
   "m2": {
    "on": false,
    "topic": "M2.status",
-   "at": 1792060249363
+   "at": 1792060309475
+  },
+  "grid": {
+   "on": true,
+   "topic": "GRID.status",
+   "at": 1792060312266
   },
   "fls": {
    "on": true,
    "topic": "fls.status",
-   "at": 1792060250720
+   "at": 1792060312799
+  },
+  "packer3": {
+   "on": true,
+   "topic": "P3",
+   "at": 1792060308474
   },
   "r1": {
    "on": false,
    "topic": "R1.status",
-   "at": 1792060249363
+   "at": 1792060309475
   }
  }
 }
