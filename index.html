@@ -97,6 +97,15 @@
   .reasons li{font-size:11.5px;color:var(--ink);padding:4px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px}
   .reasons li b{color:var(--red)}
   #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:13px}
+  .walkhint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:none;background:rgba(15,92,86,.92);color:#eafaf7;border-radius:9px;padding:8px 16px;font-size:11.5px;letter-spacing:.3px;box-shadow:0 6px 18px rgba(15,60,56,.28);white-space:nowrap}
+  .walkhint b{color:#bff3ea}
+  body.walking .walkhint{display:block}
+  body.walking .hud,body.walking .silos,body.walking .machines{opacity:.35}
+  body.walking #walkCross{display:block}
+  #walkCross{display:none;position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;pointer-events:none}
+  #walkCross:before,#walkCross:after{content:"";position:absolute;background:rgba(15,92,86,.65)}
+  #walkCross:before{left:7px;top:0;width:2px;height:16px}
+  #walkCross:after{top:7px;left:0;height:2px;width:16px}
   footer{font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
   @media (max-width:820px){.stage{height:56vh}.panel{width:260px}}
 </style>
@@ -132,6 +141,9 @@
     <button id="mLive" class="active" onclick="setMetric('live')">Live TPH / Silo %</button>
     <button id="mNpt" onclick="setMetric('npt')">Downtime min</button>
     <span class="sp"></span>
+    <span class="mlabel">View</span>
+    <button id="btnWalk" onclick="toggleWalk()">Walk in Floor</button>
+    <span class="sp"></span>
     <button id="btnRot" class="active" onclick="toggleRotate()">Auto-rotate</button>
     <button onclick="resetView()">Reset view</button>
     <div class="live"><span id="liveDot" class="dotlive off"></span><span id="liveTxt">Loading live data…</span></div>
@@ -164,6 +176,10 @@
       <a class="btn" id="pLink" href="#" target="_blank" rel="noopener">Open full OEE dashboard →</a>
     </div>
     <div id="err">3D engine unavailable. Check your internet connection (three.js is loaded from a CDN) and refresh.</div>
+    <div class="walkhint" id="walkHint">
+      <b>Walk in Floor</b> — <b>W A S D</b> / arrow keys to move · <b>Shift</b> to run · <b>drag</b> to look · <b>Esc</b> to exit
+    </div>
+    <div id="walkCross"></div>
   </div>
 
   <footer>
@@ -366,6 +382,7 @@ function applyPeriod(){
 var renderer,scene,camera,stage,canvasEl,labelsEl,clock;
 var AZ=-0.62, EL=0.95, DIST=118;
 var camTarget=null, dragging=false, lastX=0,lastY=0, autoRotate=true;
+var WALK=false, WALKPOS=null, YAW=0, PITCH=0, keys={};
 var anchors=[]; // {wc, vec3}
 var SILOMESH={}; // id -> {shell, fill, h, r}
 
@@ -377,6 +394,7 @@ function init3D(){
   scene.fog=new THREE.Fog(0xbcd3cf,140,340);
   camera=new THREE.PerspectiveCamera(45,1,0.1,1200);
   camTarget=new THREE.Vector3(0,8,0);
+  WALKPOS=new THREE.Vector3(0,1.7,50);
 
   var hemi=new THREE.HemisphereLight(0xffffff,0x8aa3a0,0.95); scene.add(hemi);
   var dir=new THREE.DirectionalLight(0xffffff,0.85); dir.position.set(60,110,40); scene.add(dir);
@@ -568,10 +586,25 @@ function project(){
 }
 function animate(){
   requestAnimationFrame(animate);
-  if(autoRotate&&!dragging) AZ+=0.0016;
-  var sx=Math.sin(EL)*Math.cos(AZ), sy=Math.cos(EL), sz=Math.sin(EL)*Math.sin(AZ);
-  camera.position.set(camTarget.x+DIST*sx, camTarget.y+DIST*sy, camTarget.z+DIST*sz);
-  camera.lookAt(camTarget);
+  if(WALK){
+    var spd=(keys['shift']?42:20)/60;
+    var dir=new THREE.Vector3(Math.sin(YAW),0,-Math.cos(YAW));
+    var right=new THREE.Vector3(Math.cos(YAW),0,Math.sin(YAW));
+    if(keys['w']||keys['arrowup'])    WALKPOS.addScaledVector(dir, spd);
+    if(keys['s']||keys['arrowdown'])  WALKPOS.addScaledVector(dir,-spd);
+    if(keys['a']||keys['arrowleft'])  WALKPOS.addScaledVector(right,-spd);
+    if(keys['d']||keys['arrowright']) WALKPOS.addScaledVector(right, spd);
+    WALKPOS.x=Math.max(-72,Math.min(72,WALKPOS.x));
+    WALKPOS.z=Math.max(-54,Math.min(54,WALKPOS.z));
+    var cp=Math.cos(PITCH);
+    camera.position.set(WALKPOS.x,WALKPOS.y,WALKPOS.z);
+    camera.lookAt(WALKPOS.x+Math.sin(YAW)*cp, WALKPOS.y+Math.sin(PITCH), WALKPOS.z-Math.cos(YAW)*cp);
+  } else {
+    if(autoRotate&&!dragging) AZ+=0.0016;
+    var sx=Math.sin(EL)*Math.cos(AZ), sy=Math.cos(EL), sz=Math.sin(EL)*Math.sin(AZ);
+    camera.position.set(camTarget.x+DIST*sx, camTarget.y+DIST*sy, camTarget.z+DIST*sz);
+    camera.lookAt(camTarget);
+  }
   renderer.render(scene,camera);
   project();
 }
@@ -579,14 +612,28 @@ function resize(){ var w=stage.clientWidth,h=stage.clientHeight; renderer.setSiz
 function bindControls(){
   canvasEl.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;lastY=e.clientY;canvasEl.setPointerCapture(e.pointerId);});
   canvasEl.addEventListener('pointermove',function(e){ if(!dragging)return;
-    AZ+=(e.clientX-lastX)*0.006; EL-=(e.clientY-lastY)*0.006;
-    EL=Math.max(0.28,Math.min(1.45,EL)); lastX=e.clientX;lastY=e.clientY;});
+    if(WALK){ YAW-=(e.clientX-lastX)*0.005; PITCH-=(e.clientY-lastY)*0.004;
+      PITCH=Math.max(-1.2,Math.min(1.2,PITCH)); }
+    else { AZ+=(e.clientX-lastX)*0.006; EL-=(e.clientY-lastY)*0.006;
+      EL=Math.max(0.28,Math.min(1.45,EL)); }
+    lastX=e.clientX;lastY=e.clientY;});
   canvasEl.addEventListener('pointerup',function(e){dragging=false;});
   canvasEl.addEventListener('pointerleave',function(){dragging=false;});
-  canvasEl.addEventListener('wheel',function(e){e.preventDefault(); DIST=Math.max(45,Math.min(230,DIST+e.deltaY*0.08));},{passive:false});
+  canvasEl.addEventListener('wheel',function(e){e.preventDefault(); if(WALK) return; DIST=Math.max(45,Math.min(230,DIST+e.deltaY*0.08));},{passive:false});
+  window.addEventListener('keydown',function(e){ var k=e.key.toLowerCase(); keys[k]=true;
+    if(WALK && ['arrowup','arrowdown','arrowleft','arrowright'].indexOf(k)>=0) e.preventDefault();
+    if(k==='escape' && WALK) toggleWalk(); });
+  window.addEventListener('keyup',function(e){ keys[e.key.toLowerCase()]=false; });
 }
 function toggleRotate(){ autoRotate=!autoRotate; document.getElementById('btnRot').classList.toggle('active',autoRotate); }
-function resetView(){ AZ=-0.62; EL=0.95; DIST=118; }
+function resetView(){ AZ=-0.62; EL=0.95; DIST=118; if(WALK){ WALKPOS.set(0,1.7,50); YAW=0; PITCH=-0.03; } }
+function toggleWalk(){
+  WALK=!WALK;
+  document.getElementById('btnWalk').classList.toggle('active',WALK);
+  document.body.classList.toggle('walking',WALK);
+  if(WALK){ WALKPOS.set(0,1.7,50); YAW=0; PITCH=-0.03; autoRotate=false;
+    document.getElementById('btnRot').classList.remove('active'); }
+}
 
 /* ---------- drill panel ---------- */
 function openPanel(id){
@@ -755,3 +802,4 @@ else { document.getElementById('err').style.display='flex'; }
 </script>
 </body>
 </html>
+

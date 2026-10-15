@@ -66,6 +66,8 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
 ## Features
 - **3D interactive scene** (three.js) — orbit (drag), zoom (wheel), auto-rotate, reset view;
   workcenter tags are anchored in 3D and projected to screen each frame, with collision avoidance.
+- **Walk in Floor** tab — first-person Gemba walk-through: **W A S D / arrow keys** to move, **Shift** to
+  run, **drag** to look, **Esc** to exit; workcenter tags stay visible as you walk the plant.
 - **Silo fill colours in 3D** — each silo is a translucent tank whose coloured fill rises with the live
   level, shaded **green → yellow → red** (low = green, nearly full = red) so the level reads at a glance.
 - **Tag metric selector**: **Live TPH / Silo %** (default) · **OEE %** · **Production MT** · **Downtime min**.
