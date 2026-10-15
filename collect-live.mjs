@@ -17,6 +17,7 @@ const USER = process.env.IBOS_USER || 'dashboard';
 const PASS = process.env.IBOS_PASS || '';
 const SIO_PATH = process.env.IBOS_SIO_PATH || '/dashboard/socket.io/';
 const OUT = process.argv[2] || 'live.json';
+const DUR = Number(process.argv[3] || 12000);
 const AUTH = 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64');
 
 const STATUS_MAP = {
@@ -73,7 +74,7 @@ function collect(durMs) {
   });
 }
 
-collect(12000).then(() => {
+collect(DUR).then(() => {
   fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
   console.log('[collect] ok=' + out.ok + ' connected=' + out.connected +
     ' milldata=' + (out.milldata ? 'yes' : 'no') + ' status=' + Object.keys(out.status).join(',') +
