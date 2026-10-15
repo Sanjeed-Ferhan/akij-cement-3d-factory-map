@@ -98,13 +98,24 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
   Opening `index.html` directly via `file://` also works, falling back to `http://localhost:8787/api/live`.
 
 ## GitHub Pages deployment
-This repo is deployed as a **static** site on GitHub Pages — open it directly, no bridge needed:
+Deployed as a **static** site on GitHub Pages — anyone can open it, from anywhere:
 
 **https://sanjeed-ferhan.github.io/akij-cement-3d-factory-map/**
 
-> On GitHub Pages the **Google Sheets** metrics (Net Production, OEE, downtime) load directly, but the
-> **IBOS live data** (silo levels, mill TPH, machine status) needs the local Node bridge — so those
-> panels show *offline* on the public site. Run `live-server.js` locally for the full live view.
+### Live data from anywhere (no server needed)
+The IBOS feed is published to the site by a **GitHub Action** (`.github/workflows/live.yml`) that runs
+on GitHub's cloud every ~5 minutes and, within each run, re-publishes about once a minute:
+
+1. `collect-live.mjs` connects to IBOS (credentials from repo **secrets** `IBOS_USER` / `IBOS_PASS`),
+   gathers `milldata` (silo levels + mill TPH) and the machine status topics.
+2. It writes `live.json` to the repo (main branch), so GitHub Pages serves it same-origin.
+3. The dashboard reads `live.json` (cache-busted) → **everyone sees live silo levels, mill TPH and
+   machine status**, updating roughly every minute.
+
+Statuses are carried forward between runs, so event-driven packer states don't flicker to “—”.
+
+The dashboard tries sources in order: local bridge → public `live.json` (Pages) → Sheets.
+So the owner gets the freshest data (local bridge, ~10 s) and everyone else gets the cloud feed.
 
 `live-server.js` / `start-bridge.bat` are **not** published (they contain the IBOS credentials) and are
 listed in `.gitignore`.
