@@ -58,6 +58,9 @@
   .wc-tag .v-green{color:var(--green)} .wc-tag .v-amber{color:#b26a00} .wc-tag .v-red{color:var(--red)}
   .wc-tag .stem{position:absolute;left:50%;bottom:-16px;width:2px;height:16px;background:rgba(15,92,86,.45);transform:translateX(-50%)}
   .wc-tag .foot{width:7px;height:7px;border-radius:50%;background:rgba(15,92,86,.55);position:absolute;left:50%;bottom:-19px;transform:translateX(-50%)}
+  .wc-tag.wc-minor{opacity:.72;border-left-color:#c3cfcc}
+  .wc-tag.wc-minor .sub{display:none}
+  .wc-tag.wc-minor .val{font-size:11px;color:var(--muted)}
   .hud{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
   .hud .stat{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:9px;padding:8px 11px;min-width:172px;box-shadow:0 3px 10px rgba(15,60,56,.12)}
   .hud .stat .k{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700}
@@ -183,7 +186,7 @@
   </div>
 
   <footer>
-    <span>Source: ACCL VRM <i>Production Report</i> &amp; <i>VRM Breakdown</i> (Google Sheets) + <i>IBOS milldata</i> (silo levels &amp; mill TPH, live via bridge)</span>
+    <span>Source: ACCL VRM <i>Production Report</i> &amp; <i>VRM Breakdown</i> (Google Sheets) + <i>IBOS milldata</i> (silo levels, mill TPH, machine status) · layout from plant flowsheet (diagrams.net)</span>
     <span>Tag metric = Live TPH/Silo % · OEE % · Production MT · Downtime min · colour = RAG · click a tag to drill down</span>
   </footer>
 </div>
@@ -191,29 +194,58 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ============================================================
-   WORKCENTER MODEL — Akij Cement (ACCL VRM plant)
-   Positions are (x, 0, z) on the plant floor; tagY = label height.
-   millKey  -> workcenter whose status comes from mill-level OEE
-   match    -> keywords matched against the Breakdown log (equipment downtime)
-   live     -> key in the IBOS live "milldata" payload (TPH / silo level %)
-   liveKind -> 'mill' (TPH, higher=better) | 'silo' (%, high=near full) | 'clinker' (low=risk)
+   WORKCENTER MODEL — Akij Cement (ACCL)
+   Layout follows the plant flowsheet (diagrams.net mapping):
+   https://app.diagrams.net/#G18LWaiPPUeYQeGjv2M1MHv_jzdfTmyH9c#%7B%22pageId%22%3A%22Da_KXjMT9hpUvnMKJv3S%22%7D
+   dx,dy  -> shape centre in diagram coordinates (converted to world by worldPos)
+   live   -> key in the IBOS live "milldata" payload (TPH / silo level %)
+   liveKind -> 'mill' | 'silo' (high=near full) | 'clinker' (low=risk)
+   status -> key in the IBOS machine 'status' payload (on/off)
    ============================================================ */
+var MAP={cx:800,cy:870,s:0.078};
+function worldPos(dx,dy){ return [(dx-MAP.cx)*MAP.s,(dy-MAP.cy)*MAP.s]; }
+var TAGY={mill:22,silo:27,feeder:8,conveyor:6,packer:11,building:14,vessel:8,crane:24,truck:6,reclaimer:7};
+
 var WC = [
-  {id:'clnk',   code:'WC-RM-03', name:'Clinker Silo',                zone:'Raw material intake', type:'silo',     pos:[-52,0,-12], tagY:24, match:['clinker silo','clnk-silo'],                    millKey:null, live:'CLNK-SILO', liveKind:'clinker'},
-  {id:'hopper', code:'WC-RM-01', name:'Clinker Hopper',              zone:'Raw material intake', type:'hopper',   pos:[-42,0,6],   tagY:10, match:['clinker hopper'],                                 millKey:null},
-  {id:'belt511',code:'WC-RM-02', name:'Belt Conveyor 511WF150',      zone:'Raw material intake', type:'conveyor', pos:[-32,0,6],   tagY:6,  match:['511wf150','belt conveyor 511'],                     millKey:null},
-  {id:'bel513', code:'WC-TR-01', name:'Bucket Elevator 513 BE',      zone:'Material transport',  type:'elevator', pos:[-30,0,-22], tagY:15, match:['513 be','bucket elevator 513','513be'],             millKey:null},
-  {id:'vrm1',   code:'WC-GR-01', name:'VRM-1 — Loesche Mill',        zone:'Grinding',            type:'mill',     pos:[-14,0,-4],  tagY:21, match:null, millKey:'VRM-1', live:'loesche_TPH', liveKind:'mill'},
-  {id:'rf506',  code:'WC-GR-03', name:'Rotary Feeder 531 RF506',     zone:'Grinding / feed',     type:'feeder',   pos:[-14,0,12],  tagY:8,  match:['rotary feeder','531 rf','531rf'],                    millKey:null},
-  {id:'vrm2',   code:'WC-GR-02', name:'VRM-2 — FLS Mill',            zone:'Grinding',            type:'mill',     pos:[14,0,-4],   tagY:21, match:null, millKey:'VRM-2', live:'fls_TPH', liveKind:'mill'},
-  {id:'rf503',  code:'WC-GR-04', name:'Rotary Feeder 531 RF503',     zone:'Grinding / feed',     type:'feeder',   pos:[14,0,12],   tagY:8,  match:['rotary feeder','531 rf','531rf'],                    millKey:null},
-  {id:'bel514', code:'WC-TR-02', name:'Bucket Elevator 514 BE',      zone:'Material transport',  type:'elevator', pos:[2,0,-22],   tagY:15, match:['514 be','bucket elevator 514','514be'],             millKey:null},
-  {id:'silo1',  code:'WC-ST-01', name:'Cement Silo 1 (PCC)',         zone:'Storage',             type:'silo',     pos:[44,0,-2],   tagY:27, match:['silo-1','cement silo','silo full','silo almost full','warehouse block'], millKey:null, live:'SILO-1', liveKind:'silo'},
-  {id:'silo2',  code:'WC-ST-02', name:'Cement Silo 2 (PCC)',         zone:'Storage',             type:'silo',     pos:[44,0,12],   tagY:27, match:['silo-2'],                                          millKey:null, live:'SILO-2', liveKind:'silo'},
-  {id:'opc1',   code:'WC-ST-03', name:'OPC Silo 1',                  zone:'Storage',             type:'silo',     pos:[44,0,26],   tagY:27, match:['opc-1'],                                          millKey:null, live:'OPC-1',  liveKind:'silo'},
-  {id:'opc2',   code:'WC-ST-04', name:'OPC Silo 2',                  zone:'Storage',             type:'silo',     pos:[44,0,40],   tagY:27, match:['opc-2'],                                          millKey:null, live:'OPC-2',  liveKind:'silo'},
-  {id:'packing',code:'WC-DP-01', name:'Packing Plant & Dispatch',    zone:'Dispatch',            type:'building', pos:[44,0,-26],  tagY:17, match:['packing','dispatch','truck'],                       millKey:null}
+  // ---- Raw material / clinker import ----
+  {id:'baghouse', code:'WC-RM-01', name:'Bag House',                 zone:'Raw material',   type:'building',  dx:149, dy:5},
+  {id:'wf1',      code:'WC-RM-02', name:'Weigh Feeder',              zone:'Raw material',   type:'feeder',    dx:70,  dy:20},
+  {id:'bc1',      code:'WC-RM-03', name:'Belt Conveyor',             zone:'Raw material',   type:'conveyor',  dx:121, dy:22},
+  {id:'reclaimer',code:'WC-RM-04', name:'Reclaimer',                 zone:'Raw material',   type:'reclaimer', dx:49,  dy:91},
+  {id:'rv1',      code:'WC-RM-05', name:'Rotating Valve',            zone:'Raw material',   type:'feeder',    dx:297, dy:189},
+  {id:'mother',   code:'WC-IM-01', name:'Mother Vessel',             zone:'Clinker import', type:'vessel',    dx:293, dy:205},
+  {id:'lighter',  code:'WC-IM-02', name:'Lighter Vessel',            zone:'Clinker import', type:'vessel',    dx:493, dy:205},
+  {id:'crane',    code:'WC-IM-03', name:'E-Crane',                   zone:'Clinker import', type:'crane',     dx:800, dy:193},
+  {id:'shed',     code:'WC-IM-04', name:'Storage under Shed',        zone:'Clinker import', type:'building',  dx:304, dy:335},
+  {id:'truck',    code:'WC-IM-05', name:'Dump Truck',                zone:'Clinker import', type:'truck',     dx:660, dy:518},
+  {id:'clnk',     code:'WC-ST-01', name:'Clinker Storage Silo',      zone:'Clinker storage',type:'silo',      dx:839, dy:615, live:'CLNK-SILO', liveKind:'clinker', match:['clinker silo','clnk-silo']},
+  // ---- Grinding feed ----
+  {id:'wf2',      code:'WC-GR-01', name:'Weigh Feeder',              zone:'Grinding feed',  type:'feeder',    dx:154, dy:784},
+  {id:'wf3',      code:'WC-GR-02', name:'Weigh Feeder',              zone:'Grinding feed',  type:'feeder',    dx:447, dy:785},
+  {id:'bc2',      code:'WC-GR-03', name:'Belt Conveyor',             zone:'Grinding feed',  type:'conveyor',  dx:466, dy:869},
+  {id:'bc5',      code:'WC-GR-04', name:'Belt Conveyor',             zone:'Grinding feed',  type:'conveyor',  dx:219, dy:975},
+  {id:'rv2',      code:'WC-GR-05', name:'Rotating Valve',            zone:'Grinding feed',  type:'feeder',    dx:219, dy:1199},
+  // ---- Storage ----
+  {id:'opc',      code:'WC-ST-02', name:'OPC Silo',                  zone:'Storage',        type:'silo',      dx:896, dy:995,  live:'OPC-1', liveKind:'silo', match:['opc-1','opc silo']},
+  {id:'ppc',      code:'WC-ST-03', name:'PPC Silo',                  zone:'Storage',        type:'silo',      dx:688, dy:1127, live:'SILO-1',liveKind:'silo', match:['silo-1','ppc silo','cement silo','warehouse block']},
+  // ---- Grinding ----
+  {id:'vrm1',     code:'WC-GR-06', name:'VRM-1 (Loesche)',           zone:'Grinding',       type:'mill',      dx:339, dy:1250, millKey:'VRM-1', live:'loesche_TPH', liveKind:'mill', status:'loesche'},
+  {id:'vrm2',     code:'WC-GR-07', name:'VRM-2 (FLS)',               zone:'Grinding',       type:'mill',      dx:1223,dy:1293, millKey:'VRM-2', live:'fls_TPH',     liveKind:'mill', status:'fls'},
+  // ---- Packing & dispatch ----
+  {id:'pkrW',     code:'WC-PK-00', name:'Rotary Packer (West)',      zone:'Packing',        type:'packer',    dx:400, dy:1470},
+  {id:'pkrE',     code:'WC-PK-06', name:'Rotary Packer (East)',      zone:'Packing',        type:'packer',    dx:1183,dy:1466},
+  {id:'packer1',  code:'WC-PK-01', name:'Packer 1',                  zone:'Packing',        type:'packer',    dx:1079,dy:1565, status:'packer1'},
+  {id:'packer2',  code:'WC-PK-02', name:'Packer 2',                  zone:'Packing',        type:'packer',    dx:937, dy:1565, status:'packer2'},
+  {id:'packer3',  code:'WC-PK-03', name:'Packer 3',                  zone:'Packing',        type:'packer',    dx:813, dy:1395, status:'packer3'},
+  {id:'packer4',  code:'WC-PK-04', name:'Packer 4',                  zone:'Packing',        type:'packer',    dx:685, dy:1575, status:'packer4'},
+  {id:'packer5',  code:'WC-PK-05', name:'Packer 5',                  zone:'Packing',        type:'packer',    dx:539, dy:1575, status:'packer5'},
+  {id:'bc3',      code:'WC-DP-01', name:'Belt Conveyor',             zone:'Packing feed',   type:'conveyor',  dx:1207,dy:949},
+  {id:'bc4',      code:'WC-DP-02', name:'Belt Conveyor',             zone:'Packing feed',   type:'conveyor',  dx:1467,dy:949},
+  {id:'del1',     code:'WC-DP-03', name:'Finished Product Delivery', zone:'Dispatch',       type:'building',  dx:474, dy:1720, match:['dispatch','truck','packing']},
+  {id:'del2',     code:'WC-DP-04', name:'Finished Product Delivery', zone:'Dispatch',       type:'building',  dx:1120,dy:1720, match:['dispatch','truck','packing']}
 ];
+WC.forEach(function(w){ var p=worldPos(w.dx,w.dy); w.pos=[p[0],0,p[1]]; if(w.tagY==null) w.tagY=(TAGY[w.type]||8); });
+
 
 var CFG = {
   sheet:'1NzcGrUHk7N4FSVGpAp9ZQ_H7TbpmX92YTtaJSnMx8Hg',
@@ -382,7 +414,7 @@ function applyPeriod(){
 
 /* ---------- 3D scene ---------- */
 var renderer,scene,camera,stage,canvasEl,labelsEl,clock;
-var AZ=-0.62, EL=0.95, DIST=118;
+var AZ=-0.62, EL=0.95, DIST=155;
 var camTarget=null, dragging=false, lastX=0,lastY=0, autoRotate=true;
 var WALK=false, WALKPOS=null, YAW=0, PITCH=0, keys={};
 var anchors=[]; // {wc, vec3}
@@ -396,7 +428,7 @@ function init3D(){
   scene.fog=new THREE.Fog(0xbcd3cf,140,340);
   camera=new THREE.PerspectiveCamera(45,1,0.1,1200);
   camTarget=new THREE.Vector3(0,8,0);
-  WALKPOS=new THREE.Vector3(0,1.7,50);
+  WALKPOS=new THREE.Vector3(-12,1.7,80);
 
   var hemi=new THREE.HemisphereLight(0xffffff,0x8aa3a0,0.95); scene.add(hemi);
   var dir=new THREE.DirectionalLight(0xffffff,0.85); dir.position.set(60,110,40); scene.add(dir);
@@ -413,51 +445,37 @@ function cyl(rt,rb,h,x,z,color,o){var g=new THREE.Mesh(new THREE.CylinderGeometr
 function cone(r,h,x,z,color,o){var g=new THREE.Mesh(new THREE.ConeGeometry(r,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
 
 function buildPlant(){
-  // floor
-  var floor=new THREE.Mesh(new THREE.BoxGeometry(150,1.5,110),mat(0x9fb8b4,{r:0.95}));
-  floor.position.set(0,-0.75,0); scene.add(floor);
-  var grid=new THREE.GridHelper(150,50,0x6f8d89,0x84a09c); grid.position.y=0.02; scene.add(grid);
-  // roads
-  box(150,0.1,7,0,4,0x8d8f8c,{r:1}); box(7,0.1,110,0,42,0x8d8f8c,{r:1});
-
-  // ---- Raw intake: clinker hopper + belt conveyor ----
-  cone(5.2,9,-42,6,0xb9c2c7,{m:0.25}); cyl(2.6,2.6,3,-42,6,0x94a0a6);
-  var belt=box(20,0.9,3.0,-32,6,0x6d7b82,{m:0.35});
-  for(var i=-41;i<=-23;i+=3){ box(2.2,1.1,3.4,i,6,0x55636a); }
-
-  // ---- Mills ----
-  buildMill(-14,-4); buildMill(14,-4);
-
-  // ---- Rotary feeders (feed hoppers) ----
-  cyl(2.2,2.2,6,-14,12,0xcdd6da); cyl(2.2,2.2,6,14,12,0xcdd6da);
-  cone(2.6,3,-14,12,0x8fa0a7); cone(2.6,3,14,12,0x8fa0a7);
-
-  // ---- Bucket elevators ----
-  buildElevator(-30,-22); buildElevator(2,-22);
-
-  // ---- Cement / OPC / clinker silos (translucent shell + coloured fill level) ----
-  buildSilo(44,-2,'silo1',4.6,24);
-  buildSilo(44,12,'silo2',4.6,24);
-  buildSilo(44,26,'opc1',4.6,24);
-  buildSilo(44,40,'opc2',4.6,24);
-  buildSilo(-52,-12,'clnk',6.0,22);
-  // silo discharge line
-  box(1.4,1.4,46,44,19,0x80929a);
-
-  // ---- Packing plant building ----
-  box(22,15,18,44,-26,0xd7dde0); box(24,1.2,20,44,-26,0x0f5c56);
-  box(7,7,7,58,-26,0xb9c2c7); // truck loading bay
-  // trucks
-  box(6,3,2.6,58,-14,0x0b7a6f); box(3,3.4,2.6,54,-14,0x0f5c56);
-
-  // ---- pipe / utility racks (decor) ----
-  for(var k=-40;k<=40;k+=16){ box(0.6,9,0.6,k,-12,0x8fa0a7); }
-  box(82,0.6,0.6,0,-12,0x9fb0b6,{m:0.3}); box(82,0.6,0.6,0,-13.5,0x9fb0b6,{m:0.3});
-
-  // anchors for tags
+  // floor sized to the layout extents
+  var minX=1e9,maxX=-1e9,minZ=1e9,maxZ=-1e9;
+  WC.forEach(function(w){minX=Math.min(minX,w.pos[0]);maxX=Math.max(maxX,w.pos[0]);minZ=Math.min(minZ,w.pos[2]);maxZ=Math.max(maxZ,w.pos[2]);});
+  var pad=16, W=(maxX-minX)+pad*2, D=(maxZ-minZ)+pad*2, cX=(minX+maxX)/2, cZ=(minZ+maxZ)/2;
+  var floor=new THREE.Mesh(new THREE.BoxGeometry(W,1.5,D),mat(0x9fb8b4,{r:0.95})); floor.position.set(cX,-0.75,cZ); scene.add(floor);
+  var grid=new THREE.GridHelper(Math.max(W,D),Math.round(Math.max(W,D)/4),0x6f8d89,0x84a09c); grid.position.set(cX,0.02,cZ); scene.add(grid);
+  box(6,0.1,D,cX,cZ,0x8d8f8c,{r:1});           // main road
+  box(W,0.1,7,cX,cZ,0x8d8f8c,{r:1});           // cross road
+  // one mesh per workcenter
+  WC.forEach(function(w){ buildWC(w); });
+  // tag anchors
   anchors=[];
   WC.forEach(function(wc){ anchors.push({wc:wc, v:new THREE.Vector3(wc.pos[0],wc.tagY,wc.pos[2])}); });
 }
+function buildWC(w){
+  var x=w.pos[0], z=w.pos[2];
+  switch(w.type){
+    case 'mill':     buildMill(x,z); break;
+    case 'silo':     buildSilo(x,z,w.id,4.8,22); break;
+    case 'feeder':   cyl(1.8,1.8,5,x,z,0xcdd6da); cone(2.2,2.6,x,z,0x8fa0a7); break;
+    case 'conveyor': box(11,0.8,2.4,x,z,0x6d7b82,{m:0.35}); box(11,1.6,0.5,x,z,0x55636a).position.y=2.2; break;
+    case 'packer':   cyl(2.6,2.6,6,x,z,0xcdd6da); cyl(3.0,3.0,1.0,x,z,0x0b7a6f).position.y=6; cone(3.0,2.4,x,z,0x8fa0a7).position.y=7.2; box(4,3,4,x-4,z+3,0x9aa7ae); break;
+    case 'building': box(12,9,10,x,z,0xd7dde0); box(13,1.0,11,x,z,0x0f5c56).position.y=9; break;
+    case 'vessel':   box(16,3,4,x,z,0x8fa0a7); box(6,2,3,x-6,z,0xb9c2c7); box(6,2,3,x+6,z,0xb9c2c7); break;
+    case 'crane':    box(1.2,26,1.2,x-5,z,0xf2b705); box(1.2,26,1.2,x+5,z,0xf2b705); box(12,1.2,1.2,x,z,0xf2b705).position.y=26; box(0.6,10,0.6,x,z,0x8f9aa0).position.y=13; break;
+    case 'truck':    box(6,3,2.6,x,z,0x0b7a6f); box(2.5,3,2.6,x-4,z,0x0f5c56); break;
+    case 'reclaimer':box(7,4,5,x,z,0xb9c2c7,{m:0.2}); break;
+    default:         box(6,5,5,x,z,0xb9c2c7);
+  }
+}
+
 function buildMill(x,z){
   var base=box(20,1.4,18,x,z,0x8d9aa0);
   cyl(6.2,6.2,16,x,z,0xb4bec4,{m:0.35});
@@ -531,9 +549,10 @@ function renderTags(){
     var s=STATUS[wc.id]; if(!s) return;
     var el=document.getElementById('tag-'+wc.id); if(!el) return;
     var mm=metricOf(s);
-    el.className='wc-tag rag-'+mm.rag;
+    el.className='wc-tag rag-'+mm.rag + ((wc.live||wc.status||wc.millKey)?'':' wc-minor');
     var v=document.getElementById('v-'+wc.id);
-    if(mm.v==null){ v.textContent='no data'; v.className='val'; }
+    if(mm.text!=null){ v.innerHTML='<span class="v-'+mm.rag+'">'+mm.text+'</span>'; }
+    else if(mm.v==null){ v.textContent='no data'; v.className='val'; }
     else {
       var txt = (METRIC==='oee'||METRIC==='live') ? mm.v.toFixed(1) : mm.v.toLocaleString(undefined,{maximumFractionDigits:1});
       v.innerHTML='<span class="v-'+mm.rag+'">'+txt+'</span><small>'+mm.unit+'</small>';
@@ -596,8 +615,8 @@ function animate(){
     if(keys['s']||keys['arrowdown'])  WALKPOS.addScaledVector(dir,-spd);
     if(keys['a']||keys['arrowleft'])  WALKPOS.addScaledVector(right,-spd);
     if(keys['d']||keys['arrowright']) WALKPOS.addScaledVector(right, spd);
-    WALKPOS.x=Math.max(-72,Math.min(72,WALKPOS.x));
-    WALKPOS.z=Math.max(-54,Math.min(54,WALKPOS.z));
+    WALKPOS.x=Math.max(-95,Math.min(75,WALKPOS.x));
+    WALKPOS.z=Math.max(-90,Math.min(90,WALKPOS.z));
     var cp=Math.cos(PITCH);
     camera.position.set(WALKPOS.x,WALKPOS.y,WALKPOS.z);
     camera.lookAt(WALKPOS.x+Math.sin(YAW)*cp, WALKPOS.y+Math.sin(PITCH), WALKPOS.z-Math.cos(YAW)*cp);
@@ -628,12 +647,12 @@ function bindControls(){
   window.addEventListener('keyup',function(e){ keys[e.key.toLowerCase()]=false; });
 }
 function toggleRotate(){ autoRotate=!autoRotate; document.getElementById('btnRot').classList.toggle('active',autoRotate); }
-function resetView(){ AZ=-0.62; EL=0.95; DIST=118; if(WALK){ WALKPOS.set(0,1.7,50); YAW=0; PITCH=-0.03; } }
+function resetView(){ AZ=-0.62; EL=0.95; DIST=155; if(WALK){ WALKPOS.set(-12,1.7,80); YAW=0; PITCH=-0.03; } }
 function toggleWalk(){
   WALK=!WALK;
   document.getElementById('btnWalk').classList.toggle('active',WALK);
   document.body.classList.toggle('walking',WALK);
-  if(WALK){ WALKPOS.set(0,1.7,50); YAW=0; PITCH=-0.03; autoRotate=false;
+  if(WALK){ WALKPOS.set(-12,1.7,80); YAW=0; PITCH=-0.03; autoRotate=false;
     document.getElementById('btnRot').classList.remove('active'); }
 }
 
@@ -645,7 +664,7 @@ function openPanel(id){
   document.getElementById('pName').textContent=wc.name;
   document.getElementById('pZone').innerHTML='Zone: '+wc.zone+' &nbsp; <span class="badge b-'+s.rag+'">'+(s.rag==='green'?'ON TARGET':s.rag==='amber'?'WATCH':'LOSS')+'</span>';
   var rows='';
-  if(s.m&&s.m.live){
+  if(s.m&&s.m.live && wc.live){
     rows+='<div class="row"><span class="k">Live · '+(wc.liveKind==='mill'?'throughput':'level')+'</span><span class="v" style="color:var(--teal)">'+s.m.live.v.toFixed(2)+' '+s.m.live.unit+'</span></div>';
   }
   rows+=(s.rows||[]).map(function(r){return '<div class="row"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';}).join('');
@@ -786,13 +805,18 @@ function applyLive(md, st, at){
     if(!STATUS[wc.id]) STATUS[wc.id]={rag:'green',m:{oee:null,prod:null,npt:{v:0,unit:'min NPT',rag:'green',sub:'—'},live:null},rows:[],reasons:[]};
     STATUS[wc.id].m.live={v:v,unit:(kind==='mill'?'TPH':'% level'),rag:ragForLive(kind,v,null),sub:liveSub(kind,v)};
   });
-  // overlay ON/OFF status on the two mills
-  if(MACHSTATUS){
-    [['vrm1','loesche'],['vrm2','fls']].forEach(function(p){
-      var s=STATUS[p[0]], m=MACHSTATUS[p[1]];
-      if(s&&s.m&&s.m.live&&m){ s.m.live.sub=(m.on?'RUNNING':'STOPPED')+' · '+s.m.live.unit; if(!m.on) s.m.live.rag='red'; }
-    });
-  }
+  // overlay ON/OFF machine status (mills keep their TPH value; packers show RUNNING/STOPPED)
+  WC.forEach(function(wc){
+    if(!wc.status) return;
+    var m=MACHSTATUS&&MACHSTATUS[wc.status]; if(!m) return;
+    if(!STATUS[wc.id]) STATUS[wc.id]={rag:'green',m:{oee:null,prod:null,npt:{v:0,unit:'min NPT',rag:'green',sub:'—'},live:null},rows:[],reasons:[]};
+    if(wc.live && STATUS[wc.id].m.live){
+      STATUS[wc.id].m.live.sub=(m.on?'RUNNING':'STOPPED')+' · '+STATUS[wc.id].m.live.unit;
+      if(!m.on) STATUS[wc.id].m.live.rag='red';
+    } else {
+      STATUS[wc.id].m.live={text:(m.on?'RUNNING':'STOPPED'),unit:'',rag:(m.on?'green':'red'),sub:'live machine status'};
+    }
+  });
   var fls=parseFloat(md['fls_TPH']), loe=parseFloat(md['loesche_TPH']);
   document.getElementById('hudLive').innerHTML=(isFinite(fls)?fls.toFixed(0):'—')+' / '+(isFinite(loe)?loe.toFixed(0):'—');
   document.getElementById('hudLiveS').textContent='FLS / Loesche TPH · S1 '+md['SILO-1']+'% · CLNK '+md['CLNK-SILO']+'%';
@@ -815,4 +839,5 @@ else { document.getElementById('err').style.display='flex'; }
 </script>
 </body>
 </html>
+
 
