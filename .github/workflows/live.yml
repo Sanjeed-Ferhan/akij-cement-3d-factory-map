@@ -30,23 +30,18 @@ jobs:
           IBOS_PASS: ${{ secrets.IBOS_PASS }}
         run: |
           set -e
-          # ensure the data branch exists (branch off main)
-          if ! gh api "repos/$REPO/git/refs/heads/live-data" --jq .object.sha >/dev/null 2>&1; then
-            MAIN=$(gh api "repos/$REPO/git/refs/heads/main" --jq .object.sha)
-            gh api --method POST "repos/$REPO/git/refs" -f ref="refs/heads/live-data" -f sha="$MAIN" >/dev/null
-          fi
           publish() {
             local F="$RUNNER_TEMP/live.json"
             [ -f "$F" ] || return 0
             local SHA C
-            SHA=$(gh api "repos/$REPO/contents/live.json?ref=live-data" --jq .sha 2>/dev/null || true)
+            SHA=$(gh api "repos/$REPO/contents/live.json?ref=main" --jq .sha 2>/dev/null || true)
             C=$(base64 -w0 "$F")
             if [ -n "$SHA" ]; then
               gh api --method PUT "repos/$REPO/contents/live.json" \
-                -f message="live $(date -u +%FT%TZ)" -f content="$C" -f branch=live-data -f sha="$SHA" >/dev/null
+                -f message="live $(date -u +%FT%TZ)" -f content="$C" -f branch=main -f sha="$SHA" >/dev/null
             else
               gh api --method PUT "repos/$REPO/contents/live.json" \
-                -f message="live $(date -u +%FT%TZ)" -f content="$C" -f branch=live-data >/dev/null
+                -f message="live $(date -u +%FT%TZ)" -f content="$C" -f branch=main >/dev/null
             fi
             echo "published $(date -u +%T)"
           }

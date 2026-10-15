@@ -222,7 +222,8 @@ var CFG = {
   bdCol:{date:1,cat:8,eq:9,reason:10,min:11},
   targets:{A:90,P:86,Q:97,OEE:75},
   link:'https://sanjeed-ferhan.github.io/accl-vrm-oee-dashboard/',
-  livePublic:'https://raw.githubusercontent.com/Sanjeed-Ferhan/akij-cement-3d-factory-map/live-data/live.json'
+  livePublicAbs:'https://sanjeed-ferhan.github.io/akij-cement-3d-factory-map/live.json',
+  livePublicRel:'live.json'
 };
 
 var DATA = null;      // { day:{}, mtd:{} }
@@ -718,11 +719,12 @@ var MACHINES=[
   ['packer1','Packer 1'],['packer2','Packer 2'],['packer3','Packer 3'],['packer4','Packer 4'],['packer5','Packer 5']
 ];
 function fetchIbosLive(){
-  var pub = CFG.livePublic + '?_=' + Date.now();
-  var same='/api/live', loc='http://localhost:8787/api/live';
-  var urls = (location.protocol==='file:') ? [loc,pub,same]
-           : (location.protocol==='https:') ? [loc,pub,same]
-           : [same,loc,pub];
+  var cb='?_='+Date.now();
+  var local='http://localhost:8787/api/live', same='/api/live';
+  var pubRel=CFG.livePublicRel+cb, pubAbs=CFG.livePublicAbs+cb;
+  var urls = (location.protocol==='file:') ? [local,pubAbs,pubRel]
+           : (location.protocol==='https:') ? [local,pubRel,pubAbs,same]
+           : [same,local,pubRel,pubAbs];
   (function tryNext(i){
     if(i>=urls.length){ ibosStatus(false,'IBOS bridge offline · run: node live-server.js');
       if(!AUTO_METRIC_SWITCHED && METRIC==='live'){ AUTO_METRIC_SWITCHED=true; setMetric('oee'); }
