@@ -246,6 +246,9 @@ var WC = [
 ];
 WC.forEach(function(w){ var p=worldPos(w.dx,w.dy); w.pos=[p[0],0,p[1]]; if(w.tagY==null) w.tagY=(TAGY[w.type]||8); });
 
+/* Material-flow connectors reproduced from the flowsheet (diagram coordinates). */
+var FLOW=[[[353,144],[433,144]],[[545,300],[790,260],[545,260],[545,337]],[[705,260],[705,337]],[[227,410],[533,450],[227,450],[482,740]],[[220,730],[226,750],[140,750],[140,774]],[[230,750],[320,750],[320,770]],[[330,770],[369,766],[379,786],[379,826],[379,846]],[[150,770],[220,770],[230,780],[230,800],[230,842]],[[578,773],[540,770],[550,810],[550,840]],[[407,1354],[480,1020]],[[62,64],[48,45],[27,64]],[[89,64],[62,32]],[[105,-40],[51,-43]],[[200,1080],[215,1072],[285,1092],[265,1160]],[[70,1050],[100,1080]],[[505,472],[905,487],[862,454]],[[485,770],[524,766],[534,786],[534,826],[534,846]],[[193,847],[151,847],[150,878],[150,898]],[[1060,430],[1060,520],[844,520],[777,510]],[[143,10],[143,30],[143,72]],[[1509,767],[1471,764],[1481,804],[1481,834]],[[1417,764],[1456,760],[1466,780],[1466,820],[1466,840]],[[1213,832],[1252,828],[1262,848],[1262,888],[1262,908]],[[80,117],[130,117],[130,57],[179,55],[227,145]],[[580,1040],[990,1037],[990,995],[710,980]],[[120,19],[0,9]],[[1191,763],[1153,760],[1163,800],[1163,830]],[[1434,839],[1394,839],[1373,847],[1373,887],[1373,907]],[[1279,914],[1313,935],[1313,970],[1323,990]],[[1393,940],[1353,940],[1332,940],[1332,970],[1332,990]],[[266,180],[230,159]],[[266,197],[230,176]],[[10,177],[140,187]],[[13,192],[134,203]],[[821,791],[950,600],[950,580],[1032,580],[823,822]],[[556,140],[728,140]],[[790,259],[900,259],[900,336]],[[1030,220],[994,310],[1070,310],[1070,330]],[[648,560],[480,573],[480,560],[420,560],[420,592]],[[690,446],[705,446],[530,450]],[[792,667],[727,603],[730,560],[614,560],[648,632]],[[540,1610],[540,1640],[680,1640],[680,1670],[820,1670],[720,1630]],[[550,1620],[1079,1640],[940,1640],[940,1670],[820,1670],[820,1710]],[[690,1605],[938,1640]],[[630,1700],[550,1690],[550,1731],[547,1756]],[[1040,1280],[688,1245],[793,1245],[793,1199],[840,1199],[840,1280]],[[898,1070],[898,1140],[898,1206],[840,1206]],[[1080,1280],[850,1280],[540,1280]],[[540,1280],[629,1250]],[[688,1280],[549,1310]],[[1300,1060],[1300,1130],[1310,1160],[850,1290]],[[904,491],[915,500],[1219,500],[558,501]],[[540,450],[1371,460],[1363,607]],[[710,430],[715,440],[1530,440],[540,460]],[[990,990],[970,950],[960,890],[737,890],[770,890]],[[1060,430],[1030,470]],[[580,1600],[580,1650]]];
+
 
 var CFG = {
   sheet:'1NzcGrUHk7N4FSVGpAp9ZQ_H7TbpmX92YTtaJSnMx8Hg',
@@ -414,7 +417,7 @@ function applyPeriod(){
 
 /* ---------- 3D scene ---------- */
 var renderer,scene,camera,stage,canvasEl,labelsEl,clock;
-var AZ=-0.62, EL=0.95, DIST=155;
+var AZ=-0.7, EL=0.92, DIST=190;
 var camTarget=null, dragging=false, lastX=0,lastY=0, autoRotate=true;
 var WALK=false, WALKPOS=null, YAW=0, PITCH=0, keys={};
 var anchors=[]; // {wc, vec3}
@@ -427,7 +430,7 @@ function init3D(){
   scene=new THREE.Scene();
   scene.fog=new THREE.Fog(0xbcd3cf,140,340);
   camera=new THREE.PerspectiveCamera(45,1,0.1,1200);
-  camTarget=new THREE.Vector3(0,8,0);
+  camTarget=new THREE.Vector3(-8,5,0);
   WALKPOS=new THREE.Vector3(-12,1.7,80);
 
   var hemi=new THREE.HemisphereLight(0xffffff,0x8aa3a0,0.95); scene.add(hemi);
@@ -455,6 +458,7 @@ function buildPlant(){
   box(W,0.1,7,cX,cZ,0x8d8f8c,{r:1});           // cross road
   // one mesh per workcenter
   WC.forEach(function(w){ buildWC(w); });
+  buildFlow();
   // tag anchors
   anchors=[];
   WC.forEach(function(wc){ anchors.push({wc:wc, v:new THREE.Vector3(wc.pos[0],wc.tagY,wc.pos[2])}); });
@@ -476,6 +480,53 @@ function buildWC(w){
   }
 }
 
+/* ---------- material-flow pipes + animated flow markers ---------- */
+var FLOWPIPES=[];
+function pipeSeg(a,b,r,color,op){
+  var len=a.distanceTo(b); if(len<0.05) return;
+  var g=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,8),mat(color,{t:true,o:op,m:0.25,r:0.5}));
+  g.position.copy(a).lerp(b,0.5);
+  g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), b.clone().sub(a).normalize());
+  scene.add(g);
+}
+function buildFlow(){
+  FLOWPIPES=[];
+  var y=2.6;
+  FLOW.forEach(function(line){
+    var pts=line.map(function(q){ var p=worldPos(q[0],q[1]); return new THREE.Vector3(p[0],y,p[1]); })
+      .filter(function(v,i,arr){ return i===0 || v.distanceTo(arr[i-1])>0.4; });
+    if(pts.length<2) return;
+    var cum=[0];
+    for(var i=1;i<pts.length;i++){ pipeSeg(pts[i-1],pts[i],0.30,0x2a9d90,0.55); cum.push(cum[i-1]+pts[i-1].distanceTo(pts[i])); }
+    var total=cum[cum.length-1]; if(total<3) return;
+    var dotCount=Math.max(1,Math.round(total/14));
+    var dots=[];
+    for(var d=0; d<dotCount; d++){
+      var m=new THREE.Mesh(new THREE.SphereGeometry(0.55,10,10), new THREE.MeshStandardMaterial({color:0x8ff0e0,emissive:0x12b76a,emissiveIntensity:0.9,roughness:0.4}));
+      scene.add(m); dots.push(m);
+    }
+    FLOWPIPES.push({pts:pts,cum:cum,total:total,dots:dots});
+  });
+}
+function posOnLine(fp,s){
+  var cum=fp.cum;
+  for(var i=1;i<cum.length;i++){
+    if(s<=cum[i]||i===cum.length-1){
+      var t=(s-cum[i-1])/Math.max(0.001,cum[i]-cum[i-1]); t=Math.max(0,Math.min(1,t));
+      return fp.pts[i-1].clone().lerp(fp.pts[i],t);
+    }
+  }
+  return fp.pts[fp.pts.length-1].clone();
+}
+function animateFlow(t){
+  for(var k=0;k<FLOWPIPES.length;k++){
+    var fp=FLOWPIPES[k], n=fp.dots.length, spacing=Math.min(fp.total/2, fp.total/n);
+    for(var i=0;i<n;i++){
+      var s=(t*11 + i*spacing) % fp.total;
+      fp.dots[i].position.copy(posOnLine(fp, s));
+    }
+  }
+}
 function buildMill(x,z){
   var base=box(20,1.4,18,x,z,0x8d9aa0);
   cyl(6.2,6.2,16,x,z,0xb4bec4,{m:0.35});
@@ -626,6 +677,7 @@ function animate(){
     camera.position.set(camTarget.x+DIST*sx, camTarget.y+DIST*sy, camTarget.z+DIST*sz);
     camera.lookAt(camTarget);
   }
+  animateFlow(performance.now()/1000);
   renderer.render(scene,camera);
   project();
 }
@@ -647,7 +699,7 @@ function bindControls(){
   window.addEventListener('keyup',function(e){ keys[e.key.toLowerCase()]=false; });
 }
 function toggleRotate(){ autoRotate=!autoRotate; document.getElementById('btnRot').classList.toggle('active',autoRotate); }
-function resetView(){ AZ=-0.62; EL=0.95; DIST=155; if(WALK){ WALKPOS.set(-12,1.7,80); YAW=0; PITCH=-0.03; } }
+function resetView(){ AZ=-0.7; EL=0.92; DIST=190; if(WALK){ WALKPOS.set(-12,1.7,80); YAW=0; PITCH=-0.03; } }
 function toggleWalk(){
   WALK=!WALK;
   document.getElementById('btnWalk').classList.toggle('active',WALK);
@@ -839,5 +891,6 @@ else { document.getElementById('err').style.display='flex'; }
 </script>
 </body>
 </html>
+
 
 

@@ -70,6 +70,9 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
   run, **drag** to look, **Esc** to exit; workcenter tags stay visible as you walk the plant.
 - **Silo fill colours in 3D** — each silo is a translucent tank whose coloured fill rises with the live
   level, shaded **green → yellow → red** (low = green, nearly full = red) so the level reads at a glance.
+- **Material-flow pipes** — the connectors from the plant flowsheet are drawn as 3D pipes with
+  **animated flow markers** running along them, so the process (clinker → mills → silos → packers →
+  dispatch) reads like the drawing.
 - **Tag metric selector**: **Live TPH / Silo %** (default) · **OEE %** · **Production MT** · **Downtime min**.
 - **RAG logic**
   - Mills (OEE): green ≥ 75 %, amber 60–75 %, red < 60 %. Production achievement: ≥100 / 85–100 / <85 %.
