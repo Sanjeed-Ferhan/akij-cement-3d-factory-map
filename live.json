@@ -1,6 +1,6 @@
 {
  "ok": true,
- "connected": true,
+ "connected": false,
  "lastAt": 1792182065927,
  "milldata": {
   "fls_TPH": "191.00",
@@ -62,5 +62,6 @@
    "topic": "R1.status",
    "at": 1792182066705
   }
- }
+ },
+ "error": "connect ECONNREFUSED 104.208.76.70:12081"
 }
