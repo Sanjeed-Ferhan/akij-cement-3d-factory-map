@@ -44,8 +44,8 @@ window open.
 |-----|---------|----------|
 | `loesche_TPH` | Loesche mill throughput (TPH) | `WC-GR-01` VRM-1 — Loesche Mill |
 | `fls_TPH` | FLS mill throughput (TPH) | `WC-GR-02` VRM-2 — FLS Mill |
-| `SILO-1` / `SILO-2` | PCC cement silo fill (%) | `WC-ST-01` / `WC-ST-02` |
-| `OPC-1` / `OPC-2` | OPC silo fill (%) | `WC-ST-03` / `WC-ST-04` |
+| `SILO-1` / `SILO-2` | PCC cement silo fill (%) | `WC-ST-03` PCC Silo 1 / `WC-ST-05` PCC Silo 2 |
+| `OPC-1` / `OPC-2` | OPC silo fill (%) | `WC-ST-02` OPC Silo 1 / `WC-ST-04` OPC Silo 2 |
 | `CLNK-SILO` | Clinker silo fill (%) | `WC-RM-03` Clinker Silo |
 
 ## Machine status (IBOS)
@@ -62,12 +62,14 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
 `WC-TR-01` Bucket Elevator 513 BE · `WC-GR-01` VRM-1 (Loesche) · `WC-GR-03` Rotary Feeder 531 RF506 ·
 `WC-GR-02` VRM-2 (FLS) · `WC-GR-04` Rotary Feeder 531 RF503 · `WC-TR-02` Bucket Elevator 514 BE ·
 `WC-ST-01/02` Cement Silos · `WC-ST-03/04` OPC Silos · `WC-DP-01` Packing Plant & Dispatch.
-
-## Features
-- **3D interactive scene** (three.js) — orbit (drag), zoom (wheel), auto-rotate, reset view;
-  workcenter tags are anchored in 3D and projected to screen each frame, with collision avoidance.
+- **3D interactive scene** (three.js) — orbit (drag), zoom (wheel), auto-rotate, reset view.
+- **Workcenters as status dots** — each work center has a small colour-coded marker (green / amber / red)
+  floating above it (no cards cluttering the model). **Click/tap a work center to open its details**;
+  hover (desktop) shows a quick tooltip with the current value.
 - **Walk in Floor** tab — first-person Gemba walk-through: **W A S D / arrow keys** to move, **Shift** to
-  run, **drag** to look, **Esc** to exit; workcenter tags stay visible as you walk the plant.
+  run, **drag** to look, **Esc** to exit; the status dots stay visible as you walk the plant.
+- **Mobile friendly** — responsive layout, touch orbit + pinch-zoom, tap-to-open bottom-sheet details,
+  and a **Hide panels** button to clear the overlays for a full-screen map.
 - **Silo fill colours in 3D** — each silo is a translucent tank whose coloured fill rises with the live
   level, shaded **green → yellow → red** (low = green, nearly full = red) so the level reads at a glance.
 - **Material-flow pipes** — the connectors from the plant flowsheet are drawn as 3D pipes with
@@ -84,9 +86,9 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
 - **Silo Levels panel** (bottom-right) — every silo listed with a live fill bar and %:
   Clinker Silo, Cement Silo 1–2 (PCC), OPC Silo 1–2, colour-coded by RAG.
 - **Day / MTD toggle** for the sheets-based metrics.
-- **Click a tag** → drill panel (live value, output, achievement, OEE factors, NPT, top downtime
+- **Click a work center** → drill panel (live value, output, achievement, OEE factors, NPT, top downtime
   reasons, IBOS last-updated) plus a link to the full OEE dashboard.
-- **Fallbacks** — sheets unavailable → offline snapshot; IBOS bridge not running → tags fall back to
+- **Fallbacks** — sheets unavailable → offline snapshot; IBOS bridge not running → markers fall back to
   downtime and the HUD shows the bridge as offline.
 
 ## Configuration

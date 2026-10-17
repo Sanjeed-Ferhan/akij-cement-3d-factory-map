@@ -36,7 +36,7 @@
   .legend .chip{display:inline-flex;align-items:center;gap:6px}
   .swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
   .stage{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#dbe9e7 0%,#c2d6d3 45%,#aec7c3 100%);height:66vh;min-height:460px}
-  #canvas{display:block;width:100%;height:100%}
+  #canvas{display:block;width:100%;height:100%;touch-action:none}
   #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
   .wc-tag{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;
     background:rgba(255,255,255,.97);border:1px solid var(--line);border-left:4px solid var(--muted);
@@ -100,17 +100,63 @@
   .reasons li{font-size:11.5px;color:var(--ink);padding:4px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px}
   .reasons li b{color:var(--red)}
   #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:13px}
+  .tip{position:absolute;left:0;top:0;display:none;pointer-events:none;z-index:5000;background:rgba(12,40,37,.95);color:#eafaf7;border:1px solid rgba(143,240,224,.35);border-radius:8px;padding:6px 10px;font-size:11.5px;line-height:1.35;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap;transform:translate(12px,-50%)}
+  .tip .n{font-weight:800;color:#bff3ea}
+  .tip .v{color:#fff}
+  .tip .h{color:#9fd8d0;font-size:10px;letter-spacing:.4px}
   .walkhint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:none;background:rgba(15,92,86,.92);color:#eafaf7;border-radius:9px;padding:8px 16px;font-size:11.5px;letter-spacing:.3px;box-shadow:0 6px 18px rgba(15,60,56,.28);white-space:nowrap}
   .walkhint b{color:#bff3ea}
   body.walking .walkhint{display:block}
   body.walking .hud,body.walking .silos,body.walking .machines{opacity:.35}
+  body.nopanels .hud,body.nopanels .silos,body.nopanels .machines{display:none}
+  #btnPanels.active{background:var(--teal);color:#fff;border-color:var(--teal)}
   body.walking #walkCross{display:block}
   #walkCross{display:none;position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;pointer-events:none}
   #walkCross:before,#walkCross:after{content:"";position:absolute;background:rgba(15,92,86,.65)}
   #walkCross:before{left:7px;top:0;width:2px;height:16px}
   #walkCross:after{top:7px;left:0;height:2px;width:16px}
   footer{font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
-  @media (max-width:820px){.stage{height:56vh}.panel{width:260px}}
+  /* ---------- responsive / mobile ---------- */
+  @media (max-width:900px){
+    .wrap{padding:8px 8px 16px;gap:8px}
+    header.top{padding:10px 12px;border-radius:10px}
+    .logo{width:38px;height:38px;font-size:17px}
+    header.top h1{font-size:15px}
+    header.top .sub{font-size:10px;letter-spacing:.4px}
+    .pill{display:none}
+    .bar{padding:8px;gap:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+    .bar .sp{display:none}
+    .bar .mlabel{flex:0 0 auto}
+    .bar button{flex:0 0 auto;padding:7px 12px;font-size:11.5px}
+    .legend{display:none}
+    .live{flex:0 0 auto;font-size:10.5px}
+    .stage{height:64vh;min-height:340px;border-radius:10px}
+    /* HUD becomes a single scrollable strip */
+    .hud{left:8px;top:8px;flex-direction:row;gap:6px;overflow-x:auto;max-width:calc(100% - 16px);padding-bottom:2px}
+    .hud .stat{min-width:118px;padding:6px 9px}
+    .hud .stat .v{font-size:16px}
+    .hud .stat .k{font-size:8.5px}
+    .hud .stat .s{font-size:9px}
+    /* silo + machine panels share the bottom half */
+    .machines{left:8px;right:auto;bottom:8px;width:calc(50% - 12px);max-height:40vh;overflow:auto;padding:8px 10px}
+    .silos{right:8px;left:auto;bottom:8px;width:calc(50% - 12px);max-height:40vh;overflow:auto;padding:8px 10px}
+    .machines .mr,.silos .sr{font-size:11px}
+    /* drill-down panel = bottom sheet */
+    .panel{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:72vh;overflow:auto}
+    .walkhint{display:none!important}
+    #walkCross{display:none!important}
+  }
+  @media (max-width:560px){
+    header.top h1{font-size:13.5px}
+    header.top .sub{display:none}
+    .stage{height:70vh}
+    .hud .stat{min-width:104px}
+    .hud .stat .v{font-size:15px}
+    .silos,.machines{max-height:34vh}
+  }
+  @media (hover:none){
+    .tip{display:none!important}
+  }
 </style>
 </head>
 <body>
@@ -146,6 +192,7 @@
     <span class="sp"></span>
     <span class="mlabel">View</span>
     <button id="btnWalk" onclick="toggleWalk()">Walk in Floor</button>
+    <button id="btnPanels" onclick="togglePanels()">Hide panels</button>
     <span class="sp"></span>
     <button id="btnRot" class="active" onclick="toggleRotate()">Auto-rotate</button>
     <button onclick="resetView()">Reset view</button>
@@ -154,7 +201,7 @@
 
   <div class="stage" id="stage">
     <canvas id="canvas"></canvas>
-    <div id="labels"></div>
+    <div class="tip" id="tip"></div>
     <div class="hud">
       <div class="stat"><div class="k">Net Production · Today</div><div class="v" id="hudNet">—</div><div class="s" id="hudNetS">good MT · gross &amp; target</div></div>
       <div class="stat"><div class="k">Live · IBOS</div><div class="v" id="hudLive">—</div><div class="s" id="hudLiveS">silo levels · mill TPH</div></div>
@@ -225,9 +272,11 @@ var WC = [
   {id:'bc2',      code:'WC-GR-03', name:'Belt Conveyor',             zone:'Grinding feed',  type:'conveyor',  dx:466, dy:869},
   {id:'bc5',      code:'WC-GR-04', name:'Belt Conveyor',             zone:'Grinding feed',  type:'conveyor',  dx:219, dy:975},
   {id:'rv2',      code:'WC-GR-05', name:'Rotating Valve',            zone:'Grinding feed',  type:'feeder',    dx:219, dy:1199},
-  // ---- Storage ----
-  {id:'opc',      code:'WC-ST-02', name:'OPC Silo',                  zone:'Storage',        type:'silo',      dx:896, dy:995,  live:'OPC-1', liveKind:'silo', match:['opc-1','opc silo']},
-  {id:'ppc',      code:'WC-ST-03', name:'PPC Silo',                  zone:'Storage',        type:'silo',      dx:688, dy:1127, live:'SILO-1',liveKind:'silo', match:['silo-1','ppc silo','cement silo','warehouse block']},
+  // ---- Storage (4 cement silos: 2 OPC + 2 PCC) ----
+  {id:'opc1',     code:'WC-ST-02', name:'OPC Silo 1',                zone:'Storage',        type:'silo',      dx:826, dy:995,  live:'OPC-1', liveKind:'silo', match:['opc-1','opc silo']},
+  {id:'opc2',     code:'WC-ST-04', name:'OPC Silo 2',                zone:'Storage',        type:'silo',      dx:966, dy:995,  live:'OPC-2', liveKind:'silo', match:['opc-2','opc silo']},
+  {id:'pcc1',     code:'WC-ST-03', name:'PCC Silo 1',                zone:'Storage',        type:'silo',      dx:608, dy:1127, live:'SILO-1',liveKind:'silo', match:['silo-1','pcc silo','ppc silo','cement silo','warehouse block']},
+  {id:'pcc2',     code:'WC-ST-05', name:'PCC Silo 2',                zone:'Storage',        type:'silo',      dx:768, dy:1127, live:'SILO-2',liveKind:'silo', match:['silo-2','pcc silo','ppc silo','cement silo','warehouse block']},
   // ---- Grinding ----
   {id:'vrm1',     code:'WC-GR-06', name:'VRM-1 (Loesche)',           zone:'Grinding',       type:'mill',      dx:339, dy:1250, millKey:'VRM-1', live:'loesche_TPH', liveKind:'mill', status:'loesche'},
   {id:'vrm2',     code:'WC-GR-07', name:'VRM-2 (FLS)',               zone:'Grinding',       type:'mill',      dx:1223,dy:1293, millKey:'VRM-2', live:'fls_TPH',     liveKind:'mill', status:'fls'},
@@ -443,9 +492,11 @@ function init3D(){
   animate();
 }
 function mat(color,opts){var o=opts||{};return new THREE.MeshStandardMaterial({color:color,roughness:(o.r!=null?o.r:0.7),metalness:(o.m!=null?o.m:0.15),transparent:!!o.t,opacity:(o.o!=null?o.o:1)});}
-function box(w,h,d,x,z,color,o){var g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
-function cyl(rt,rb,h,x,z,color,o){var g=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
-function cone(r,h,x,z,color,o){var g=new THREE.Mesh(new THREE.ConeGeometry(r,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return g;}
+var CURWC=null, PICKABLE=[];
+function tagMesh(g){ if(CURWC){ g.userData.wc=CURWC; PICKABLE.push(g);} return g; }
+function box(w,h,d,x,z,color,o){var g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return tagMesh(g);}
+function cyl(rt,rb,h,x,z,color,o){var g=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return tagMesh(g);}
+function cone(r,h,x,z,color,o){var g=new THREE.Mesh(new THREE.ConeGeometry(r,h,28),mat(color,o));g.position.set(x,h/2,z);scene.add(g);return tagMesh(g);}
 
 function buildPlant(){
   // floor sized to the layout extents
@@ -465,9 +516,10 @@ function buildPlant(){
 }
 function buildWC(w){
   var x=w.pos[0], z=w.pos[2];
+  CURWC=w.id;
   switch(w.type){
     case 'mill':     buildMill(x,z); break;
-    case 'silo':     buildSilo(x,z,w.id,4.8,22); break;
+    case 'silo':     buildSilo(x,z,w.id,4.2,22); break;
     case 'feeder':   cyl(1.8,1.8,5,x,z,0xcdd6da); cone(2.2,2.6,x,z,0x8fa0a7); break;
     case 'conveyor': box(11,0.8,2.4,x,z,0x6d7b82,{m:0.35}); box(11,1.6,0.5,x,z,0x55636a).position.y=2.2; break;
     case 'packer':   cyl(2.6,2.6,6,x,z,0xcdd6da); cyl(3.0,3.0,1.0,x,z,0x0b7a6f).position.y=6; cone(3.0,2.4,x,z,0x8fa0a7).position.y=7.2; box(4,3,4,x-4,z+3,0x9aa7ae); break;
@@ -478,6 +530,7 @@ function buildWC(w){
     case 'reclaimer':box(7,4,5,x,z,0xb9c2c7,{m:0.2}); break;
     default:         box(6,5,5,x,z,0xb9c2c7);
   }
+  CURWC=null;
 }
 
 /* ---------- material-flow pipes + animated flow markers ---------- */
@@ -554,11 +607,12 @@ function buildSilo(x,z,id,r,h){
   shell.position.set(x,h/2,z); scene.add(shell);
   var fill=new THREE.Mesh(new THREE.CylinderGeometry(r-0.22,r-0.22,1,30),
     new THREE.MeshStandardMaterial({color:0x12b76a,roughness:0.55,metalness:0.1,emissive:0x0a3f2c,emissiveIntensity:0.35}));
-  fill.position.set(x,0.5,z); scene.add(fill);
-  var roof=new THREE.Mesh(new THREE.ConeGeometry(r+0.25,4.5,30),mat(0x9aa4aa,{m:0.3})); roof.position.set(x,h+2.25,z); scene.add(roof);
+  fill.position.set(x,0.5,z); scene.add(fill); tagMesh(fill);
+  var roof=new THREE.Mesh(new THREE.ConeGeometry(r+0.25,4.5,30),mat(0x9aa4aa,{m:0.3})); roof.position.set(x,h+2.25,z); scene.add(roof); tagMesh(roof);
   var neck=cyl(1.1,1.1,3,x,z,0x8f9aa0); neck.position.y=h+4.5;
   // base ring
-  var ring=new THREE.Mesh(new THREE.CylinderGeometry(r+0.35,r+0.35,1.2,30),mat(0x7f8b91,{m:0.3})); ring.position.set(x,0.6,z); scene.add(ring);
+  var ring=new THREE.Mesh(new THREE.CylinderGeometry(r+0.35,r+0.35,1.2,30),mat(0x7f8b91,{m:0.3})); ring.position.set(x,0.6,z); scene.add(ring); tagMesh(ring);
+  tagMesh(shell);
   SILOMESH[id]={shell:shell,fill:fill,h:h,r:r};
 }
 function updateSiloLevels(){
@@ -578,16 +632,18 @@ function updateSiloLevels(){
 }
 
 /* ---------- tags ---------- */
-function buildTagDom(){
-  labelsEl.innerHTML='';
+function buildMarkers(){
   WC.forEach(function(wc){
-    var el=document.createElement('div');
-    el.className='wc-tag'; el.id='tag-'+wc.id; el.title=wc.code+' · '+wc.name+' · '+wc.zone;
-    el.innerHTML='<div class="code">'+wc.code+'</div><div class="nm">'+wc.name+'</div><div class="val" id="v-'+wc.id+'">—</div><div class="sub" id="s-'+wc.id+'"></div><div class="stem"></div><div class="foot"></div>';
-    el.addEventListener('click',function(){ openPanel(wc.id); });
-    labelsEl.appendChild(el);
+    var m=new THREE.Mesh(new THREE.SphereGeometry(1.5,14,14),
+      new THREE.MeshStandardMaterial({color:0x12b76a,emissive:0x0b7a6f,emissiveIntensity:0.7,roughness:0.35}));
+    m.position.set(wc.pos[0], wc.tagY, wc.pos[2]);
+    m.userData.wc=wc.id; scene.add(m); PICKABLE.push(m);
+    wc.marker=m;
+    var stem=new THREE.Mesh(new THREE.CylinderGeometry(0.10,0.10,Math.max(2,wc.tagY),6),mat(0x0f5c56,{t:true,o:0.45}));
+    stem.position.set(wc.pos[0], wc.tagY/2, wc.pos[2]); scene.add(stem);
   });
 }
+var RAGCOL={green:0x12b76a,amber:0xf4b740,red:0xef4444};
 var METRIC='live';
 function metricOf(s){
   var m=s.m||{};
@@ -595,20 +651,21 @@ function metricOf(s){
   if(mm==null) mm=m.npt;          // equipment has no OEE/production -> show downtime
   return mm;
 }
+function metricText(s){
+  var mm=metricOf(s);
+  if(mm.text!=null) return mm.text;
+  if(mm.v==null) return 'no data';
+  var txt=(METRIC==='oee'||METRIC==='live')?mm.v.toFixed(1):mm.v.toLocaleString(undefined,{maximumFractionDigits:1});
+  return txt+(mm.unit?(' '+mm.unit):'');
+}
 function renderTags(){
   WC.forEach(function(wc){
-    var s=STATUS[wc.id]; if(!s) return;
-    var el=document.getElementById('tag-'+wc.id); if(!el) return;
+    var s=STATUS[wc.id]; if(!s||!wc.marker) return;
     var mm=metricOf(s);
-    el.className='wc-tag rag-'+mm.rag + ((wc.live||wc.status||wc.millKey)?'':' wc-minor');
-    var v=document.getElementById('v-'+wc.id);
-    if(mm.text!=null){ v.innerHTML='<span class="v-'+mm.rag+'">'+mm.text+'</span>'; }
-    else if(mm.v==null){ v.textContent='no data'; v.className='val'; }
-    else {
-      var txt = (METRIC==='oee'||METRIC==='live') ? mm.v.toFixed(1) : mm.v.toLocaleString(undefined,{maximumFractionDigits:1});
-      v.innerHTML='<span class="v-'+mm.rag+'">'+txt+'</span><small>'+mm.unit+'</small>';
-    }
-    document.getElementById('s-'+wc.id).textContent=mm.sub||'';
+    var col=RAGCOL[mm.rag]||0x12b76a;
+    wc.marker.material.color.setHex(col);
+    wc.marker.material.emissive.setHex(col);
+    wc.marker.userData.rag=mm.rag;
   });
 }
 function setMetric(m){
@@ -620,41 +677,24 @@ function setMetric(m){
   if(DATA) renderTags();
 }
 
-/* ---------- projection loop ---------- */
-function project(){
+/* ---------- picking / hover ---------- */
+var RAY=new THREE.Raycaster(), MOUSE=new THREE.Vector2(), hoverWC=null, downPt=null, lastMouse=null;
+function pickWC(px,py){
   var w=stage.clientWidth,h=stage.clientHeight;
-  camera.aspect=w/h; camera.updateProjectionMatrix();
-  var v=new THREE.Vector3(), items=[];
-  anchors.forEach(function(a){
-    var el=document.getElementById('tag-'+a.wc.id); if(!el) return;
-    v.copy(a.v).project(camera);
-    if(v.z>1){ el.style.display='none'; return; }
-    el.style.display='';
-    var sx=(v.x*0.5+0.5)*w, sy=(-v.y*0.5+0.5)*h;
-    var vis=(v.x>-1.2&&v.x<1.2&&v.y>-1.2&&v.y<1.2);
-    items.push({el:el,sx:sx,sy:sy,z:a.wc.tagY,vz:v.z,vis:vis});
-  });
-  // de-overlap: nudge labels up if they collide
-  items.sort(function(p,q){return q.vz-p.vz;});
-  var placed=[];
-  items.forEach(function(it){
-    var h2=it.el.offsetHeight||52, w2=it.el.offsetWidth||132;
-    var x0=it.sx-w2/2, x1=it.sx+w2/2, yBase=it.sy-h2, guard=0;
-    while(guard++<40){
-      var hit=false;
-      for(var i=0;i<placed.length;i++){ var p=placed[i];
-        if(x0<p.x1+4 && x1>p.x0-4 && yBase<p.y1+4 && (yBase+h2)>p.y0-4){ hit=true; break; }
-      }
-      if(!hit) break;
-      yBase-=9;
-    }
-    yBase=Math.max(6,yBase);
-    it.el.style.left=it.sx+'px';
-    it.el.style.top=(yBase+h2)+'px';
-    it.el.style.zIndex=Math.round((1-it.vz)*1000);
-    it.el.style.opacity=it.vis?'1':'0.28';
-    placed.push({x0:x0,x1:x1,y0:yBase,y1:yBase+h2});
-  });
+  MOUSE.x=(px/w)*2-1; MOUSE.y=-(py/h)*2+1;
+  RAY.setFromCamera(MOUSE,camera);
+  var hits=RAY.intersectObjects(PICKABLE,false);
+  return hits.length? hits[0].object.userData.wc : null;
+}
+function showTip(px,py,wcId){
+  var tip=document.getElementById('tip'), s=STATUS[wcId];
+  var wc=WC.filter(function(x){return x.id===wcId;})[0];
+  tip.innerHTML='<div class="n">'+wc.name+'</div><div class="v">'+(s?metricText(s):'—')+'</div><div class="h">'+wc.code+' · click for details</div>';
+  tip.style.left=px+'px'; tip.style.top=py+'px'; tip.style.display='block';
+}
+function hideTip(){ document.getElementById('tip').style.display='none'; }
+function project(){
+  camera.aspect=stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix();
 }
 function animate(){
   requestAnimationFrame(animate);
@@ -678,27 +718,60 @@ function animate(){
     camera.lookAt(camTarget);
   }
   animateFlow(performance.now()/1000);
+  hoverPick();
   renderer.render(scene,camera);
   project();
 }
 function resize(){ var w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); }
+function hoverPick(){
+  if(!lastMouse){ hideTip(); return; }
+  var id=pickWC(lastMouse.x,lastMouse.y);
+  hoverWC=id;
+  if(id){ showTip(lastMouse.x+12,lastMouse.y,id); canvasEl.style.cursor='pointer'; }
+  else { hideTip(); canvasEl.style.cursor=(WALK?'crosshair':'grab'); }
+}
 function bindControls(){
-  canvasEl.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;lastY=e.clientY;canvasEl.setPointerCapture(e.pointerId);});
-  canvasEl.addEventListener('pointermove',function(e){ if(!dragging)return;
+  var ptrs={}, pinch=null;
+  function pd(){ return Object.keys(ptrs).length; }
+  function dist2(){ var k=Object.keys(ptrs); if(k.length<2) return 0; var a=ptrs[k[0]],b=ptrs[k[1]]; return Math.hypot(a.x-b.x,a.y-b.y); }
+  canvasEl.addEventListener('pointerdown',function(e){
+    ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    if(pd()>=2){ pinch=dist2(); dragging=false; }
+    dragging=true;lastX=e.clientX;lastY=e.clientY;downPt={x:e.clientX,y:e.clientY};
+    try{ canvasEl.setPointerCapture(e.pointerId);}catch(err){}
+  });
+  canvasEl.addEventListener('pointermove',function(e){
+    var r=canvasEl.getBoundingClientRect();
+    lastMouse={x:e.clientX-r.left,y:e.clientY-r.top};
+    if(ptrs[e.pointerId]) ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    if(pinch && pd()>=2){ var d=dist2(); if(d>0){ DIST=Math.max(45,Math.min(320,DIST*(pinch/d))); pinch=d; } lastX=e.clientX;lastY=e.clientY; return; }
+    if(!dragging)return;
     if(WALK){ YAW-=(e.clientX-lastX)*0.005; PITCH-=(e.clientY-lastY)*0.004;
       PITCH=Math.max(-1.2,Math.min(1.2,PITCH)); }
     else { AZ+=(e.clientX-lastX)*0.006; EL-=(e.clientY-lastY)*0.006;
       EL=Math.max(0.28,Math.min(1.45,EL)); }
     lastX=e.clientX;lastY=e.clientY;});
-  canvasEl.addEventListener('pointerup',function(e){dragging=false;});
-  canvasEl.addEventListener('pointerleave',function(){dragging=false;});
-  canvasEl.addEventListener('wheel',function(e){e.preventDefault(); if(WALK) return; DIST=Math.max(45,Math.min(230,DIST+e.deltaY*0.08));},{passive:false});
+  canvasEl.addEventListener('pointerup',function(e){
+    delete ptrs[e.pointerId]; if(pd()<2) pinch=null;
+    dragging=false;
+    if(downPt && Math.hypot(e.clientX-downPt.x,e.clientY-downPt.y)<8){
+      var r=canvasEl.getBoundingClientRect();
+      var id=pickWC(e.clientX-r.left,e.clientY-r.top);
+      if(id) openPanel(id); else closePanel();
+    }
+    downPt=null;});
+  canvasEl.addEventListener('pointercancel',function(e){ delete ptrs[e.pointerId]; dragging=false; pinch=null; });
+  canvasEl.addEventListener('pointerleave',function(){dragging=false; lastMouse=null; hideTip();});
+  canvasEl.addEventListener('wheel',function(e){e.preventDefault(); if(WALK) return; DIST=Math.max(45,Math.min(320,DIST+e.deltaY*0.08));},{passive:false});
   window.addEventListener('keydown',function(e){ var k=e.key.toLowerCase(); keys[k]=true;
     if(WALK && ['arrowup','arrowdown','arrowleft','arrowright'].indexOf(k)>=0) e.preventDefault();
-    if(k==='escape' && WALK) toggleWalk(); });
+    if(k==='escape'){ if(WALK) toggleWalk(); else closePanel(); } });
   window.addEventListener('keyup',function(e){ keys[e.key.toLowerCase()]=false; });
 }
 function toggleRotate(){ autoRotate=!autoRotate; document.getElementById('btnRot').classList.toggle('active',autoRotate); }
+function togglePanels(){ var b=document.body.classList.toggle('nopanels');
+  document.getElementById('btnPanels').classList.toggle('active',b);
+  document.getElementById('btnPanels').textContent=b?'Show panels':'Hide panels'; }
 function resetView(){ AZ=-0.7; EL=0.92; DIST=190; if(WALK){ WALKPOS.set(-12,1.7,80); YAW=0; PITCH=-0.03; } }
 function toggleWalk(){
   WALK=!WALK;
@@ -710,7 +783,8 @@ function toggleWalk(){
 
 /* ---------- drill panel ---------- */
 function openPanel(id){
-  var wc=WC.filter(function(w){return w.id===id;})[0]; var s=STATUS[id]; if(!wc||!s) return;
+  var wc=WC.filter(function(w){return w.id===id;})[0]; if(!wc) return;
+  var s=STATUS[id]||{rag:'green',rows:[],reasons:[]};
   currentPanel=id;
   document.getElementById('pCode').textContent=wc.code;
   document.getElementById('pName').textContent=wc.name;
@@ -720,7 +794,7 @@ function openPanel(id){
     rows+='<div class="row"><span class="k">Live · '+(wc.liveKind==='mill'?'throughput':'level')+'</span><span class="v" style="color:var(--teal)">'+s.m.live.v.toFixed(2)+' '+s.m.live.unit+'</span></div>';
   }
   rows+=(s.rows||[]).map(function(r){return '<div class="row"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';}).join('');
-  rows+='<div class="row"><span class="k">Period</span><span class="v">'+(PERIOD==='day'?DATA.lastLabel:DATA.mtdRange)+'</span></div>';
+  rows+='<div class="row"><span class="k">Period</span><span class="v">'+(DATA?(PERIOD==='day'?DATA.lastLabel:DATA.mtdRange):'—')+'</span></div>';
   if(LIVE_AT) rows+='<div class="row"><span class="k">IBOS updated</span><span class="v">'+new Date(LIVE_AT).toLocaleTimeString()+'</span></div>';
   document.getElementById('pRows').innerHTML=rows;
   var rsn=(s.reasons&&s.reasons.length)? '<div style="font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:10px">Top downtime reasons</div><ul class="reasons">'+
@@ -741,12 +815,11 @@ function setPeriod(p){
 
 /* ---------- boot ---------- */
 function boot(){
-  labelsEl=document.getElementById('labels');
-  buildTagDom();
-  renderSilos();
-  renderMachines();
   try{ init3D(); }
   catch(e){ document.getElementById('err').style.display='flex'; console.error(e); }
+  buildMarkers();
+  renderSilos();
+  renderMachines();
   updateSiloLevels();
   fetchLive();
   fetchIbosLive();
