@@ -116,6 +116,105 @@
   #walkCross:before{left:7px;top:0;width:2px;height:16px}
   #walkCross:after{top:7px;left:0;height:2px;width:16px}
   footer{font-size:10.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  /* ---------- workcenter tagging (GPS survey) ---------- */
+  #btnTag.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+  #btnTags{position:relative}
+  #btnTags .cnt{display:inline-block;min-width:17px;padding:0 4px;margin-left:4px;border-radius:9px;background:var(--teal);color:#fff;font-size:9.5px;line-height:15px;text-align:center}
+  .tagpanel{position:absolute;right:12px;top:12px;width:352px;max-width:calc(100% - 24px);max-height:calc(100% - 24px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(15,60,56,.24);padding:14px;display:none;z-index:30}
+  body.tagging .tagpanel{display:block}
+  .tagpanel h3{margin:2px 0 2px;font-size:16px}
+  .tagpanel .code{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .tagpanel .zone{font-size:11px;color:var(--teal);font-weight:700;margin:0 0 10px}
+  .tagpanel .close{position:absolute;right:10px;top:10px;border:0;background:#f1f4f3;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:800;color:var(--muted)}
+  .tagpanel .lbl{display:block;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:800;margin:10px 0 4px}
+  .tagpanel input,.tagpanel select{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:12.5px;color:var(--ink);background:#fff;outline:none}
+  .tagpanel input:focus,.tagpanel select:focus{border-color:var(--teal2);box-shadow:0 0 0 3px rgba(11,122,111,.13)}
+  .tagpanel input::placeholder{color:#a9b5b3}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btnrow{display:flex;gap:8px;margin-top:10px}
+  .btnrow button{flex:1;border:1px solid var(--line);background:#fff;color:var(--teal);font-weight:800;font-size:11.5px;padding:9px 10px;border-radius:8px;cursor:pointer;letter-spacing:.2px}
+  .btnrow button.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .btnrow button:disabled{opacity:.45;cursor:not-allowed}
+  .gpsbox{border:1px solid var(--line);border-radius:10px;padding:10px 11px 11px;background:#f7faf9;margin-top:4px}
+  .gpsline{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800}
+  .gpsline .gpsacc{margin-left:auto;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+  .gpsdot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+  .gpsdot.ok{background:var(--green2);box-shadow:0 0 0 4px rgba(18,183,106,.14)}
+  .gpsdot.warn{background:var(--amber2);box-shadow:0 0 0 4px rgba(244,183,64,.16)}
+  .gpsdot.bad{background:var(--red2);box-shadow:0 0 0 4px rgba(239,68,68,.14)}
+  .gpsdot.wait{background:var(--teal2);animation:pulse 1.6s infinite}
+  .gpsmeta{font-size:10.5px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums;word-break:break-all}
+  .gpsbar{height:6px;border-radius:4px;background:#e6eceb;overflow:hidden;margin-top:7px}
+  .gpsbar i{display:block;height:100%;width:0;border-radius:4px;background:var(--teal2);transition:width .25s,background .25s}
+  .tagwarn{font-size:10.5px;line-height:1.45;color:#8a5a00;background:#fff8e6;border:1px solid #f4dfa6;border-radius:8px;padding:7px 9px;margin-top:9px;display:none}
+  .tagwarn.show{display:block}
+  .tagwarn.bad{color:#8e1f1f;background:#fdeeee;border-color:#f3c4c4}
+  .tagfoot{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:9px;border-top:1px dashed var(--line);font-size:10px;color:var(--muted)}
+  .tagfoot .linkbtn{border:0;background:none;color:var(--teal);font-weight:800;font-size:10.5px;cursor:pointer;padding:0;text-decoration:underline}
+  .tagfoot .sync{margin-left:auto;font-weight:800}
+  .tagfoot .sync.ok{color:var(--green)}
+  .tagfoot .sync.off{color:#b26a00}
+  .tagok{border:1px solid #bfe6d4;background:#f2fbf6;border-radius:11px;padding:12px;text-align:center;margin-top:4px}
+  .tagok .okhead{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--green);font-weight:800}
+  .tagok .okname{font-size:17px;font-weight:800;margin:2px 0 1px}
+  .tagok .okmeta{font-size:10.5px;color:var(--muted)}
+  .tagok .qrwrap{margin:10px auto 2px}
+  .qrwrap{display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;width:200px}
+  .qrwrap svg{width:182px;height:182px;display:block}
+  .ticks{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:6px}
+  .ticks b{color:var(--ink)}
+  /* modals */
+  .modal{position:fixed;inset:0;background:rgba(10,30,28,.48);display:none;align-items:center;justify-content:center;z-index:10000;padding:16px;backdrop-filter:blur(2px)}
+  .modal.show{display:flex}
+  .modal .card{position:relative;background:#fff;border-radius:14px;width:100%;max-width:430px;max-height:90vh;overflow:auto;padding:18px 18px 20px;box-shadow:0 24px 60px rgba(0,0,0,.32)}
+  .modal .card.wide{max-width:560px}
+  .modal .card .close{position:absolute;right:12px;top:12px;border:0;background:#f1f4f3;border-radius:6px;width:26px;height:26px;cursor:pointer;font-weight:800;color:var(--muted);font-size:14px}
+  .modal .card h3{margin:2px 0 3px;font-size:17px}
+  .modal .card .code{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .modal .card .zone{font-size:11px;color:var(--teal);font-weight:700;margin:0 0 12px;line-height:1.45}
+  .modal .card .lbl{display:block;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:800;margin:10px 0 4px}
+  .modal .card select{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:12.5px;color:var(--ink);background:#fff;outline:none}
+  .modal .card .qrwrap{margin:12px auto}
+  .modal .card .qrwrap svg{width:196px;height:196px}
+  .anchors{margin:11px 0 0;padding:0;list-style:none}
+  .anchors li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:11.5px}
+  .anchors li .an{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .anchors li .am{color:var(--muted);font-size:10px;margin-left:auto;white-space:nowrap}
+  .anchors li button{border:0;background:#fdeeee;color:var(--red);border-radius:5px;font-size:10px;font-weight:800;padding:3px 6px;cursor:pointer}
+  .anchors .empty{color:var(--muted);font-size:11px;border:0}
+  .fitbox{font-size:10.5px;color:var(--muted);margin-top:9px;line-height:1.5}
+  .fitbox b{color:var(--ink)}
+  .fitbox.bad b{color:var(--red)}
+  /* saved tags list */
+  .tagsearch{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:12.5px;outline:none;margin-bottom:4px}
+  .taglist{max-height:44vh;overflow:auto;margin-top:8px;border-top:1px solid var(--line)}
+  .tagrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .tagrowmain{flex:1;min-width:0}
+  .tagrowmain b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tagrowmain .sm{display:block;font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tagrowmain .sm2{display:block;font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tagrowbtns{display:flex;gap:5px;flex:0 0 auto}
+  .tagrowbtns button{border:1px solid var(--line);background:#fff;color:var(--teal);font-size:10px;font-weight:800;border-radius:6px;padding:4px 7px;cursor:pointer}
+  .tagrowbtns button.del{color:var(--red);border-color:#f3c4c4;background:#fdeeee}
+  .tagempty{padding:16px 4px;text-align:center;color:var(--muted);font-size:11.5px;line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:rgba(12,40,37,.96);color:#eafaf7;border:1px solid rgba(143,240,224,.35);border-radius:10px;padding:10px 18px;font-size:12px;font-weight:700;box-shadow:0 10px 26px rgba(0,0,0,.3);z-index:20000;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.bad{background:#3b1111;border-color:#f3c4c4}
+  @media (max-width:900px){
+    .tagpanel{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:74vh}
+    .tagpanel .qrwrap svg{width:170px;height:170px}
+    .modal .card{max-height:88vh}
+    .taglist{max-height:38vh}
+  }
+  @media print{
+    body *{visibility:hidden!important}
+    #qrModal,#qrModal *{visibility:visible!important}
+    #qrModal{position:absolute;inset:0;display:block!important;background:#fff;padding:0}
+    #qrModal .card{box-shadow:none;border:0;max-width:none;width:auto;margin:26mm auto;text-align:center}
+    #qrModal .close,#qrModal .btnrow{display:none!important}
+    #qrModal .qrwrap{width:auto;border:0}
+    #qrModal .qrwrap svg{width:70mm;height:70mm}
+  }
   /* ---------- responsive / mobile ---------- */
   @media (max-width:900px){
     .wrap{padding:8px 8px 16px;gap:8px}
@@ -192,6 +291,8 @@
     <span class="sp"></span>
     <span class="mlabel">View</span>
     <button id="btnWalk" onclick="toggleWalk()">Walk in Floor</button>
+    <button id="btnTag" onclick="toggleTagMode()">Tag Workcenter</button>
+    <button id="btnTags" onclick="openTagList()">Tags<span class="cnt" id="tagCount">0</span></button>
     <button id="btnPanels" onclick="togglePanels()">Hide panels</button>
     <span class="sp"></span>
     <button id="btnRot" class="active" onclick="toggleRotate()">Auto-rotate</button>
@@ -225,6 +326,112 @@
       <div id="pReasons"></div>
       <a class="btn" id="pLink" href="#" target="_blank" rel="noopener">Open full OEE dashboard →</a>
     </div>
+    <div class="tagpanel" id="tagPanel">
+      <button class="close" onclick="toggleTagMode()">×</button>
+      <div class="code">Site mapping · GPS</div>
+      <h3>Tag a workcenter</h3>
+      <div class="zone" id="tagStep">Walk to the location, capture GPS, then name it.</div>
+
+      <div id="tagFormWrap">
+        <div class="gpsbox">
+          <div class="gpsline"><span class="gpsdot" id="gpsDot"></span><b id="gpsTxt">GPS idle</b><span class="gpsacc" id="gpsAcc">—</span></div>
+          <div class="gpsmeta" id="gpsMeta">Tap “Use my location” while standing at the workcenter.</div>
+          <div class="gpsbar"><i id="gpsBar"></i></div>
+          <div class="btnrow">
+            <button id="btnGps" class="primary" onclick="gpsStart()">Use my location</button>
+            <button onclick="gpsStop()">Stop</button>
+          </div>
+        </div>
+
+        <label class="lbl" for="tagName">Workcenter name *</label>
+        <input id="tagName" list="tagSuggest" placeholder="e.g. Packer 3 / VRM-1 / Clinker silo" oninput="tagFormChange()">
+        <datalist id="tagSuggest"></datalist>
+
+        <div class="grid2">
+          <div><label class="lbl" for="tagCode">Code</label><input id="tagCode" placeholder="auto"></div>
+          <div><label class="lbl" for="tagZone">Zone</label><select id="tagZone"></select></div>
+        </div>
+
+        <label class="lbl" for="tagNote">Note</label>
+        <input id="tagNote" placeholder="optional — equipment no., floor, access">
+
+        <div class="btnrow">
+          <button class="primary" id="btnConfirmTag" onclick="confirmTag()" disabled>Confirm &amp; fix location</button>
+          <button onclick="resetTagForm()">Clear</button>
+        </div>
+        <div class="tagwarn" id="tagWarn"></div>
+
+        <div class="tagfoot">
+          <button class="linkbtn" onclick="openCalib()">Calibrate map</button>
+          <span id="calibState">not calibrated</span>
+          <span class="sync off" id="tagSync">local</span>
+        </div>
+      </div>
+
+      <div id="tagResult"></div>
+    </div>
+
+    <div class="modal" id="qrModal" onclick="if(event.target===this)closeQr()">
+      <div class="card">
+        <button class="close" onclick="closeQr()">×</button>
+        <div class="code">Workcenter tag · print label</div>
+        <h3 id="qrName">—</h3>
+        <div class="zone" id="qrSub">—</div>
+        <div class="qrwrap" id="qrHost"></div>
+        <div class="fitbox" id="qrMeta" style="display:none"></div>
+        <div class="btnrow">
+          <button class="primary" onclick="printQr()">Print label</button>
+          <button onclick="downloadQr()">Download PNG</button>
+        </div>
+        <div class="btnrow">
+          <button onclick="focusQrTag()">Show on map</button>
+          <button onclick="deleteQrTag()" style="color:var(--red);border-color:#f3c4c4">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="calibModal" onclick="if(event.target===this)closeCalib()">
+      <div class="card">
+        <button class="close" onclick="closeCalib()">×</button>
+        <div class="code">Map calibration</div>
+        <h3>Anchor GPS to the plant map</h3>
+        <div class="zone">Calibrate once: stand at a known workcenter, select it, capture. Repeat at a second spot — a third improves accuracy.</div>
+        <label class="lbl" for="calibWc">Workcenter I am standing at</label>
+        <select id="calibWc"></select>
+        <div class="btnrow"><button class="primary" id="btnCalibCap" onclick="calibCapture()">Capture GPS here (10 s)</button></div>
+        <ul class="anchors" id="calibAnchors"></ul>
+        <div class="fitbox" id="calibFit"></div>
+        <div class="tagwarn" id="calibMsg"></div>
+        <div class="btnrow">
+          <button class="primary" id="btnCalibSave" onclick="calibSave()" disabled>Save calibration</button>
+          <button onclick="calibClear()">Clear all</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="tagListModal" onclick="if(event.target===this)closeTagList()">
+      <div class="card wide">
+        <button class="close" onclick="closeTagList()">×</button>
+        <div class="code">GPS survey</div>
+        <h3>Saved workcenter tags</h3>
+        <div class="zone" id="tagListSub">—</div>
+        <input class="tagsearch" id="tagSearch" placeholder="Search name, code, zone…" oninput="renderTagList()">
+        <div class="taglist" id="tagList"></div>
+        <div class="btnrow">
+          <button class="primary" onclick="exportTags()">Export JSON</button>
+          <button onclick="downloadTagsJson()">Download tags.json</button>
+          <button onclick="document.getElementById('tagImport').click()">Import</button>
+        </div>
+        <input type="file" id="tagImport" accept="application/json,.json" style="display:none" onchange="importTags(event)">
+        <div class="tagfoot">
+          <button class="linkbtn" onclick="closeTagList();openCalib()">Calibrate map</button>
+          <span class="sync off" id="tagSync2">local</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
     <div id="err">3D engine unavailable. Check your internet connection (three.js is loaded from a CDN) and refresh.</div>
     <div class="walkhint" id="walkHint">
       <b>Walk in Floor</b> — <b>W A S D</b> / arrow keys to move · <b>Shift</b> to run · <b>drag</b> to look · <b>Esc</b> to exit
@@ -239,6 +446,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="qrcode.js"></script>
 <script>
 /* ============================================================
    WORKCENTER MODEL — Akij Cement (ACCL)
@@ -679,12 +887,12 @@ function setMetric(m){
 
 /* ---------- picking / hover ---------- */
 var RAY=new THREE.Raycaster(), MOUSE=new THREE.Vector2(), hoverWC=null, downPt=null, lastMouse=null;
-function pickWC(px,py){
+function pickTarget(px,py){
   var w=stage.clientWidth,h=stage.clientHeight;
   MOUSE.x=(px/w)*2-1; MOUSE.y=-(py/h)*2+1;
   RAY.setFromCamera(MOUSE,camera);
   var hits=RAY.intersectObjects(PICKABLE,false);
-  return hits.length? hits[0].object.userData.wc : null;
+  return hits.length? hits[0].object.userData : null;
 }
 function showTip(px,py,wcId){
   var tip=document.getElementById('tip'), s=STATUS[wcId];
@@ -727,10 +935,10 @@ function animate(){
 function resize(){ var w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); }
 function hoverPick(){
   if(!lastMouse){ hideTip(); return; }
-  var id=pickWC(lastMouse.x,lastMouse.y);
-  hoverWC=id;
-  if(id){ showTip(lastMouse.x+12,lastMouse.y,id); canvasEl.style.cursor='pointer'; }
-  else { hideTip(); canvasEl.style.cursor=(WALK?'crosshair':'grab'); }
+  var t=pickTarget(lastMouse.x,lastMouse.y);
+  if(t && t.tagId && typeof showTagTip==='function'){ hoverWC=null; showTagTip(lastMouse.x+12,lastMouse.y,t.tagId); canvasEl.style.cursor='pointer'; }
+  else if(t && t.wc){ hoverWC=t.wc; showTip(lastMouse.x+12,lastMouse.y,t.wc); canvasEl.style.cursor='pointer'; }
+  else { hoverWC=null; hideTip(); canvasEl.style.cursor=(WALK?'crosshair':'grab'); }
 }
 function bindControls(){
   var ptrs={}, pinch=null;
@@ -758,8 +966,10 @@ function bindControls(){
     dragging=false;
     if(downPt && Math.hypot(e.clientX-downPt.x,e.clientY-downPt.y)<8){
       var r=canvasEl.getBoundingClientRect();
-      var id=pickWC(e.clientX-r.left,e.clientY-r.top);
-      if(id) openPanel(id); else closePanel();
+      var t=pickTarget(e.clientX-r.left,e.clientY-r.top);
+      if(t && t.tagId && typeof openQr==='function') openQr(t.tagId);
+      else if(t && t.wc) openPanel(t.wc);
+      else closePanel();
     }
     downPt=null;});
   canvasEl.addEventListener('pointercancel',function(e){ delete ptrs[e.pointerId]; dragging=false; pinch=null; });
@@ -973,6 +1183,665 @@ function fallback(){
 }
 if(window.THREE){ boot(); }
 else { document.getElementById('err').style.display='flex'; }
+</script>
+<script>
+/* ============================================================
+   WORKCENTER TAGGING — GPS survey + map calibration + QR labels
+   Shared store: live-server.js  /api/tags  ->  tags.json
+   Offline: localStorage, pushed to the server when it is back.
+   ============================================================ */
+(function(){
+  'use strict';
+  var TAG_KEY='accl_wc_tags_v1';
+  var API_SAME='/api/tags', API_LOCAL='http://localhost:8787/api/tags';
+  var TAGS=[], META={calibration:null}, DIRTY=false, SERVER=false;
+  var GPS={watch:null,samples:[],best:null,last:null,started:0,active:false};
+  var CALIB=[], QR_TAG=null, TAG_GROUP=null, TOAST_T=null;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function wcById(id){ for(var i=0;i<WC.length;i++) if(WC[i].id===id) return WC[i]; return null; }
+  function tagById(id){ for(var i=0;i<TAGS.length;i++) if(TAGS[i].id===id) return TAGS[i]; return null; }
+
+  function toast(msg,bad){
+    var t=$('toast'); if(!t) return;
+    t.textContent=msg; t.className='toast show'+(bad?' bad':'');
+    clearTimeout(TOAST_T); TOAST_T=setTimeout(function(){ t.className='toast'; },3600);
+  }
+
+  /* ---------- local + shared state ---------- */
+  function loadState(){
+    try{
+      var s=JSON.parse(localStorage.getItem(TAG_KEY)||'null');
+      if(s&&Array.isArray(s.tags)) TAGS=s.tags;
+      if(s&&s.meta) META=s.meta;
+      DIRTY=!!(s&&s.dirty);
+    }catch(e){}
+  }
+  function saveState(){
+    try{ localStorage.setItem(TAG_KEY,JSON.stringify({tags:TAGS,meta:META,dirty:DIRTY})); }catch(e){}
+  }
+  function apiUrls(){
+    if(location.protocol==='file:') return [API_LOCAL];
+    return [API_SAME,API_LOCAL];
+  }
+  function tagApi(method,body){
+    var urls=apiUrls();
+    return new Promise(function(resolve,reject){
+      (function next(i){
+        if(i>=urls.length) return reject(new Error('tag server offline'));
+        var opt={method:method,cache:'no-store',headers:{}};
+        if(body!=null){ opt.headers['Content-Type']='application/json'; opt.body=JSON.stringify(body); }
+        fetch(urls[i],opt).then(function(r){
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          return r.json();
+        }).then(function(j){
+          if(!j||j.ok!==true) throw new Error('bad response');
+          SERVER=true; syncBadge(); resolve(j);
+        }).catch(function(){ next(i+1); });
+      })(0);
+    });
+  }
+  function syncBadge(){
+    var txt=SERVER?'shared':'local';
+    var cls=SERVER?'sync ok':'sync off';
+    ['tagSync','tagSync2'].forEach(function(id){ var e=$(id); if(e){ e.textContent=txt; e.className=cls; } });
+  }
+  function pushAll(){
+    return tagApi('PUT',{tags:TAGS,meta:META}).then(function(j){
+      DIRTY=false; saveState();
+      if(Array.isArray(j.tags)) TAGS=j.tags;
+      if(j.meta) META=j.meta;
+      applyCalibrationToTags(false);
+      renderTagPins(); renderTagList(); updateCounts(); syncBadge();
+      return true;
+    }).catch(function(){
+      DIRTY=true; SERVER=false; saveState(); syncBadge();
+      return false;
+    });
+  }
+  function loadTags(){
+    loadState();
+    applyCalibrationToTags(false);
+    renderTagPins(); renderTagList(); updateCounts(); syncBadge();
+    tagApi('GET').then(function(j){
+      SERVER=true; syncBadge();
+      if(DIRTY){ pushAll().then(handleDeepLink); return; }
+      if(Array.isArray(j.tags)) TAGS=j.tags;
+      if(j.meta) META=j.meta;
+      applyCalibrationToTags(false);
+      saveState(); renderTagPins(); renderTagList(); updateCounts();
+      handleDeepLink();
+    }).catch(function(){
+      SERVER=false; syncBadge();
+      fetch('tags.json?_='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+        if(j&&Array.isArray(j.tags)&&!DIRTY){
+          TAGS=j.tags; if(j.meta) META=j.meta;
+          applyCalibrationToTags(false); saveState();
+          renderTagPins(); renderTagList(); updateCounts();
+        }
+        handleDeepLink();
+      }).catch(function(){ handleDeepLink(); });
+    });
+  }
+
+  /* ---------- GPS ---------- */
+  function gpsStart(){
+    if(!navigator.geolocation){ gpsSet('bad','GPS not supported','This browser has no geolocation API.'); return; }
+    var insecure=!window.isSecureContext;
+    gpsStop(true);
+    GPS.active=true; GPS.samples=[]; GPS.best=null; GPS.last=null; GPS.started=Date.now();
+    try{
+      GPS.watch=navigator.geolocation.watchPosition(gpsOnPos,gpsOnErr,{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+    }catch(e){ gpsSet('bad','GPS error',e.message); return; }
+    var b=$('btnGps'); if(b) b.textContent='Listening…';
+    gpsSet(insecure?'warn':'wait', insecure?'GPS needs HTTPS':'Searching for GPS…',
+      insecure?'Browsers block GPS on insecure LAN addresses. Open the GitHub Pages URL, localhost, or an HTTPS tunnel.'
+              :'Hold still with some sky view. The first fix can take 30–60 s indoors.');
+    tagFormChange();
+  }
+  function gpsStop(silent){
+    if(GPS.watch!=null){ try{ navigator.geolocation.clearWatch(GPS.watch); }catch(e){} GPS.watch=null; }
+    GPS.active=false;
+    var b=$('btnGps'); if(b) b.textContent='Use my location';
+    if(!silent && !GPS.last) gpsSet('','GPS idle','Tap “Use my location” while standing at the workcenter.');
+  }
+  function gpsOnPos(p){
+    var c=p.coords;
+    var s={lat:c.latitude,lng:c.longitude,acc:c.accuracy,at:Date.now()};
+    GPS.last=s; GPS.samples.push(s);
+    if(GPS.samples.length>80) GPS.samples.shift();
+    if(!GPS.best||s.acc<GPS.best.acc) GPS.best=s;
+    gpsRender(); tagFormChange();
+  }
+  function gpsOnErr(e){
+    var msg='GPS error';
+    if(e&&e.code===1) msg='Location permission denied';
+    else if(e&&e.code===2) msg='GPS position unavailable';
+    else if(e&&e.code===3) msg='GPS timed out — retrying';
+    var hint = e&&e.code===1
+      ? (!window.isSecureContext ? 'This page is not a secure context — open it via HTTPS or localhost.' : 'Allow location access for this site in the browser settings.')
+      : 'Move to a clearer sky view and try again.';
+    gpsSet(e&&e.code===3?'warn':'bad',msg,hint);
+  }
+  function gpsSet(cls,txt,meta){
+    var d=$('gpsDot'); if(d) d.className='gpsdot '+(cls||'');
+    if($('gpsTxt')) $('gpsTxt').textContent=txt;
+    if(meta && $('gpsMeta')) $('gpsMeta').textContent=meta;
+    if(!GPS.last && $('gpsAcc')) $('gpsAcc').textContent='—';
+  }
+  function accClass(a){ return a<=8?'ok':a<=20?'warn':'bad'; }
+  function gpsRender(){
+    if(!GPS.last) return;
+    var s=GPS.last, a=Math.max(0,s.acc);
+    var d=$('gpsDot'); if(d) d.className='gpsdot '+accClass(a);
+    if($('gpsTxt')) $('gpsTxt').textContent=a<=8?'GPS strong':a<=20?'GPS fair':'GPS weak';
+    if($('gpsAcc')){ $('gpsAcc').textContent='±'+a.toFixed(0)+' m'; $('gpsAcc').style.color=a<=8?'var(--green)':a<=20?'#b26a00':'var(--red)'; }
+    if($('gpsMeta')) $('gpsMeta').textContent=s.lat.toFixed(6)+', '+s.lng.toFixed(6)+' · '+GPS.samples.length+' fix'+(GPS.samples.length===1?'':'es')+' · best ±'+GPS.best.acc.toFixed(0)+' m';
+    if($('gpsBar')){ $('gpsBar').style.width=Math.max(6,Math.min(100,100-a*1.4))+'%'; $('gpsBar').style.background=a<=8?'var(--green2)':a<=20?'var(--amber2)':'var(--red2)'; }
+  }
+  function stableFix(){
+    if(!GPS.samples.length) return null;
+    var best=GPS.best||GPS.samples[GPS.samples.length-1];
+    var maxAcc=Math.max(25,Math.min(80,best.acc*2));
+    var now=Date.now();
+    var good=GPS.samples.filter(function(s){ return s.acc<=maxAcc && now-s.at<90000; });
+    if(!good.length) good=[GPS.samples[GPS.samples.length-1]];
+    var lat=0,lng=0,wsum=0,acc=0;
+    good.forEach(function(s){ var w=1/Math.max(1,s.acc*s.acc); lat+=s.lat*w; lng+=s.lng*w; acc+=s.acc; wsum+=w; });
+    return {lat:lat/wsum,lng:lng/wsum,acc:Math.min(best.acc,acc/good.length),n:good.length,at:now};
+  }
+  function captureFix(ms){
+    return new Promise(function(resolve,reject){
+      if(!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+      if(!window.isSecureContext) return reject(new Error('GPS needs HTTPS or localhost'));
+      var got=[], done=false;
+      var id=navigator.geolocation.watchPosition(function(p){
+        var c=p.coords;
+        got.push({lat:c.latitude,lng:c.longitude,acc:c.accuracy,at:Date.now()});
+      },function(){}, {enableHighAccuracy:true,maximumAge:0,timeout:20000});
+      setTimeout(function(){
+        if(done) return; done=true;
+        try{ navigator.geolocation.clearWatch(id); }catch(e){}
+        if(!got.length) return reject(new Error('No GPS fix — move near an opening and retry'));
+        var best=got.reduce(function(a,b){ return b.acc<a.acc?b:a; });
+        var maxAcc=Math.max(25,Math.min(80,best.acc*2));
+        var good=got.filter(function(s){ return s.acc<=maxAcc; }); if(!good.length) good=[best];
+        var lat=0,lng=0,acc=0,wsum=0;
+        good.forEach(function(s){ var w=1/Math.max(1,s.acc*s.acc); lat+=s.lat*w; lng+=s.lng*w; acc+=s.acc; wsum+=w; });
+        resolve({lat:lat/wsum,lng:lng/wsum,acc:Math.min(best.acc,acc/good.length),n:good.length,at:Date.now()});
+      }, ms||10000);
+    });
+  }
+
+  /* ---------- calibration: GPS metres -> diagram dx/dy ---------- */
+  var R_EARTH=6378137, D2R=Math.PI/180;
+  function llToMeters(lat,lng,lat0,lng0){
+    return [ (lng-lng0)*D2R*Math.cos(lat0*D2R)*R_EARTH, (lat-lat0)*D2R*R_EARTH ];
+  }
+  function applyModel(model,x,y){
+    if(model.kind==='affine'){
+      var u=model.u, v=model.v;
+      return {dx:u[0]+u[1]*x+u[2]*y, dy:v[0]+v[1]*x+v[2]*y};
+    }
+    return {dx:model.tx+model.a*x-model.b*y, dy:model.ty+model.b*x+model.a*y};
+  }
+  function det3(m){
+    return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+         - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+         + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  }
+  function solve3(S,r){
+    var D=det3(S); if(Math.abs(D)<1e-9) return null;
+    function rep(col){ return S.map(function(row,i){ return row.map(function(v,j){ return j===col?r[i]:v; }); }); }
+    return [det3(rep(0))/D, det3(rep(1))/D, det3(rep(2))/D];
+  }
+  function calibBuild(anchors){
+    if(!anchors || anchors.length<2) return null;
+    var lat0=anchors[0].lat, lng0=anchors[0].lng, pts=[];
+    anchors.forEach(function(a){
+      var w=wcById(a.wcId); if(!w) return;
+      var m=llToMeters(a.lat,a.lng,lat0,lng0);
+      pts.push({x:m[0],y:m[1],u:w.dx,v:w.dy});
+    });
+    if(pts.length<2) return null;
+    var spread=0;
+    pts.forEach(function(p){ spread=Math.max(spread,Math.hypot(p.x-pts[0].x,p.y-pts[0].y)); });
+    if(spread<2) return null;
+    var model, scale;
+    if(pts.length===2){
+      var xc=(pts[0].x+pts[1].x)/2, yc=(pts[0].y+pts[1].y)/2;
+      var uc=(pts[0].u+pts[1].u)/2, vc=(pts[0].v+pts[1].v)/2;
+      var numA=0,numB=0,den=0;
+      pts.forEach(function(p){
+        var x=p.x-xc, y=p.y-yc, u=p.u-uc, v=p.v-vc;
+        numA+=x*u+y*v; numB+=x*v-y*u; den+=x*x+y*y;
+      });
+      if(den<1e-6) return null;
+      var a=numA/den, b=numB/den;
+      model={kind:'similarity',origin:[lat0,lng0],a:a,b:b,tx:uc-a*xc+b*yc,ty:vc-b*xc-a*yc};
+      scale=Math.sqrt(a*a+b*b);
+    } else {
+      var n=pts.length,sx=0,sy=0,sxx=0,sxy=0,syy=0,su=0,sux=0,suy=0,sv=0,svx=0,svy=0;
+      pts.forEach(function(p){
+        sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; syy+=p.y*p.y;
+        su+=p.u; sux+=p.x*p.u; suy+=p.y*p.u;
+        sv+=p.v; svx+=p.x*p.v; svy+=p.y*p.v;
+      });
+      var S=[[n,sx,sy],[sx,sxx,sxy],[sy,sxy,syy]];
+      var U=solve3(S,[su,sux,suy]), V=solve3(S,[sv,svx,svy]);
+      if(!U||!V) return null;
+      model={kind:'affine',origin:[lat0,lng0],u:U,v:V};
+      scale=(Math.sqrt(U[1]*U[1]+V[1]*V[1])+Math.sqrt(U[2]*U[2]+V[2]*V[2]))/2;
+    }
+    var rms=0;
+    pts.forEach(function(p){ var q=applyModel(model,p.x,p.y); rms+=Math.pow(q.dx-p.u,2)+Math.pow(q.dy-p.v,2); });
+    return {model:model,scale:scale,rms:Math.sqrt(rms/pts.length),n:pts.length};
+  }
+  function gpToMap(lat,lng,acc){
+    var c=META.calibration;
+    if(!c||!c.model) return null;
+    var o=c.model.origin;
+    var m=llToMeters(lat,lng,o[0],o[1]);
+    var q=applyModel(c.model,m[0],m[1]);
+    q.accMap=(acc||0)*(c.scale||0);
+    return q;
+  }
+  function applyCalibrationToTags(markDirty){
+    TAGS.forEach(function(t){
+      var q=gpToMap(t.lat,t.lng,t.acc);
+      if(q){ t.dx=q.dx; t.dy=q.dy; t.accMap=q.accMap; }
+      else { delete t.dx; delete t.dy; delete t.accMap; }
+    });
+    if(markDirty){ DIRTY=true; saveState(); }
+  }
+
+  /* ---------- calibration UI ---------- */
+  function calibMsg(msg,bad){
+    var e=$('calibMsg'); if(!e) return;
+    e.textContent=msg||''; e.className='tagwarn'+(msg?' show':'')+(bad?' bad':'');
+  }
+  function calibCapture(){
+    var wcId=$('calibWc').value, wc=wcById(wcId);
+    if(!wc){ calibMsg('Select the workcenter you are standing at.',true); return; }
+    var btn=$('btnCalibCap'); btn.disabled=true; btn.textContent='Capturing… hold still';
+    calibMsg('Listening for GPS for 10 s at '+wc.name+'…');
+    captureFix(10000).then(function(f){
+      var i=-1;
+      for(var k=0;k<CALIB.length;k++) if(CALIB[k].wcId===wcId) i=k;
+      var a={wcId:wcId,name:wc.name,lat:f.lat,lng:f.lng,acc:f.acc,at:Date.now(),n:f.n};
+      if(i>=0) CALIB[i]=a; else CALIB.push(a);
+      renderCalib();
+      calibMsg('Captured '+wc.name+' · ±'+f.acc.toFixed(0)+' m'+(f.acc>25?' — weak, capture again if possible':''), f.acc>25);
+    }).catch(function(e){
+      calibMsg(e.message,true);
+    }).then(function(){
+      btn.disabled=false; btn.textContent='Capture GPS here (10 s)';
+    });
+  }
+  function renderCalib(){
+    var host=$('calibAnchors'); if(!host) return;
+    if(!CALIB.length){
+      host.innerHTML='<li class="empty">No anchors yet — capture at least two known spots.</li>';
+    } else {
+      host.innerHTML=CALIB.map(function(a,i){
+        return '<li><span class="an">'+esc(a.name)+'</span><span class="am">±'+a.acc.toFixed(0)+' m · '+a.lat.toFixed(5)+','+a.lng.toFixed(5)+'</span><button onclick="__calibRemove('+i+')">✕</button></li>';
+      }).join('');
+    }
+    var fit=calibBuild(CALIB), fb=$('calibFit');
+    if(fit){
+      var okScale=fit.scale>0.05&&fit.scale<80;
+      var okRms=fit.rms<Math.max(10,fit.scale*8);
+      fb.className='fitbox'+(okScale&&okRms?'':' bad');
+      fb.innerHTML='<b>'+(fit.n===2?'2-point similarity':'3+ point affine')+'</b> · scale <b>'+fit.scale.toFixed(2)+'</b> map units/m · fit error <b>'+fit.rms.toFixed(1)+'</b> units'+
+        (okScale&&okRms?'<br>Looks good — save to place the pins.':'<br>Weak fit — add a third anchor or check the selected workcenters.');
+      $('btnCalibSave').disabled=false;
+    } else {
+      fb.className='fitbox'; fb.innerHTML='Capture a second anchor to build the transform.';
+      $('btnCalibSave').disabled=true;
+    }
+  }
+  function __calibRemove(i){ CALIB.splice(i,1); renderCalib(); }
+  function calibSave(){
+    var fit=calibBuild(CALIB);
+    if(!fit){ calibMsg('Need at least two valid anchors at different spots.',true); return; }
+    META.calibration={
+      anchors:CALIB.map(function(a){ return {wcId:a.wcId,name:a.name,lat:a.lat,lng:a.lng,acc:a.acc,at:a.at}; }),
+      model:fit.model, scale:fit.scale, rms:fit.rms, at:Date.now()
+    };
+    applyCalibrationToTags(true);
+    renderTagPins(); renderTagList(); updateCounts(); updateCalibState(); pushAll();
+    closeCalib();
+    toast('Map calibrated — '+TAGS.filter(function(t){ return t.dx!=null; }).length+' tag(s) pinned');
+  }
+  function calibClear(){
+    if(!confirm('Clear the calibration? Pins are removed from the map until you calibrate again.')) return;
+    CALIB=[]; META.calibration=null;
+    applyCalibrationToTags(true);
+    renderCalib(); renderTagPins(); renderTagList(); updateCounts(); updateCalibState(); pushAll();
+  }
+  function openCalib(){
+    popCalibWc();
+    CALIB=(META.calibration&&Array.isArray(META.calibration.anchors))?META.calibration.anchors.map(function(a){ return {wcId:a.wcId,name:a.name,lat:a.lat,lng:a.lng,acc:a.acc,at:a.at}; }):[];
+    renderCalib(); calibMsg('');
+    $('calibModal').classList.add('show');
+  }
+  function closeCalib(){ $('calibModal').classList.remove('show'); }
+
+  /* ---------- tag form ---------- */
+  function popZones(){
+    var z=[]; WC.forEach(function(w){ if(z.indexOf(w.zone)<0) z.push(w.zone); });
+    $('tagZone').innerHTML=z.map(function(x){ return '<option>'+esc(x)+'</option>'; }).join('');
+  }
+  function popSuggest(){
+    $('tagSuggest').innerHTML=WC.map(function(w){ return '<option value="'+esc(w.name)+'">'+esc(w.code)+'</option>'; }).join('');
+  }
+  function popCalibWc(){
+    var groups={};
+    WC.forEach(function(w){ (groups[w.zone]=groups[w.zone]||[]).push(w); });
+    var html='';
+    Object.keys(groups).forEach(function(z){
+      html+='<optgroup label="'+esc(z)+'">'+groups[z].map(function(w){ return '<option value="'+w.id+'">'+esc(w.name)+' ('+esc(w.code)+')</option>'; }).join('')+'</optgroup>';
+    });
+    $('calibWc').innerHTML=html;
+  }
+  function showWarn(msg,kind){
+    var e=$('tagWarn'); if(!e) return;
+    if(!msg){ e.className='tagwarn'; e.textContent=''; return; }
+    e.textContent=msg; e.className='tagwarn show'+(kind==='bad'?' bad':'');
+  }
+  function tagFormChange(){
+    var name=($('tagName').value||'').trim();
+    var fix=GPS.last;
+    var btn=$('btnConfirmTag');
+    if(btn) btn.disabled=!(name&&fix);
+    var msg='';
+    if(!fix) msg='Wait for a GPS fix (or tap “Use my location”).';
+    else if(fix.acc>30) msg='GPS is weak (±'+fix.acc.toFixed(0)+' m). The pin could be off by that much — wait for a better fix if possible.';
+    else if(!name) msg='Enter the workcenter name.';
+    showWarn(msg, fix&&fix.acc>30?'warn':'info');
+    var st=$('tagStep');
+    if(st) st.textContent=!fix?'1 · Capture the GPS location':!name?'2 · Name this workcenter':'3 · Confirm and print the label';
+  }
+  function autoCode(){
+    var n=0;
+    TAGS.forEach(function(t){ var m=/^WC-TAG-(\d+)$/i.exec(t.code||''); if(m) n=Math.max(n,parseInt(m[1],10)); });
+    var s=String(n+1); while(s.length<2) s='0'+s;
+    return 'WC-TAG-'+s;
+  }
+  function confirmTag(){
+    var name=($('tagName').value||'').trim();
+    if(!name){ showWarn('Enter the workcenter name.', 'bad'); return; }
+    var fix=stableFix();
+    if(!fix){ showWarn('Capture the GPS location first.', 'bad'); return; }
+    var tag={
+      id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      code:($('tagCode').value||'').trim()||autoCode(),
+      name:name, zone:$('tagZone').value||'', note:($('tagNote').value||'').trim(),
+      lat:fix.lat, lng:fix.lng, acc:Math.round(fix.acc*10)/10,
+      gpsAt:fix.at, createdAt:Date.now(), updatedAt:Date.now()
+    };
+    var q=gpToMap(tag.lat,tag.lng,tag.acc);
+    if(q){ tag.dx=q.dx; tag.dy=q.dy; tag.accMap=q.accMap; }
+    TAGS.push(tag);
+    DIRTY=true; saveState();
+    renderTagPins(); renderTagList(); updateCounts(); pushAll();
+    showTagResult(tag);
+    toast('Location fixed for '+tag.name);
+  }
+  function showTagResult(t){
+    var fw=$('tagFormWrap'); if(fw) fw.style.display='none';
+    var pinned=t.dx!=null;
+    $('tagResult').innerHTML='<div class="tagok">'+
+      '<div class="okhead">✓ Location fixed</div>'+
+      '<div class="okname">'+esc(t.name)+'</div>'+
+      '<div class="okmeta">'+esc(t.code)+(t.zone?' · '+esc(t.zone):'')+'</div>'+
+      '<div class="okmeta">'+t.lat.toFixed(6)+', '+t.lng.toFixed(6)+(t.acc!=null?' · ±'+t.acc.toFixed(0)+' m':'')+'</div>'+
+      '<div class="qrwrap">'+qrSvg(tagQrText(t))+'</div>'+
+      '<div class="ticks"><span>Map <b>'+(pinned?'pinned':'GPS only')+'</b></span><span>Store <b>'+(SERVER?'shared':'queued')+'</b></span></div>'+
+      '<div class="btnrow"><button class="primary" onclick="tagAnother()">Tag another</button><button onclick="openQr(\''+t.id+'\')">Print label</button></div>'+
+      '<div class="btnrow"><button onclick="focusTag(\''+t.id+'\')">Show on map</button></div>'+
+      (pinned?'':'<div class="tagwarn show">Map not calibrated — this pin will appear after you calibrate.<br><button class="linkbtn" onclick="openCalib()" style="margin-top:5px">Calibrate map now</button></div>')+
+      '</div>';
+  }
+  function tagAnother(){
+    $('tagResult').innerHTML='';
+    var fw=$('tagFormWrap'); if(fw) fw.style.display='block';
+    $('tagName').value=''; $('tagCode').value=''; $('tagNote').value='';
+    var el=$('tagName'); if(el) el.focus();
+    tagFormChange();
+  }
+  function resetTagForm(){
+    $('tagName').value=''; $('tagCode').value=''; $('tagNote').value='';
+    showWarn(''); tagFormChange();
+  }
+
+  /* ---------- counts / labels ---------- */
+  function updateCounts(){
+    var e=$('tagCount'); if(e) e.textContent=TAGS.length;
+    updateCalibState(); syncBadge();
+    var sub=$('tagListSub');
+    if(sub) sub.textContent=TAGS.length+' tag'+(TAGS.length===1?'':'s')+' · '+(META.calibration?'map calibrated':'map not calibrated')+' · '+(SERVER?'shared via live-server':'saved on this device');
+  }
+  function updateCalibState(){
+    var e=$('calibState'); if(!e) return;
+    if(META.calibration&&META.calibration.model){
+      e.innerHTML='calibrated <span style="color:var(--green)">'+TAGS.filter(function(t){ return t.dx!=null; }).length+' pinned</span>';
+    } else e.textContent='not calibrated';
+  }
+
+  /* ---------- QR labels ---------- */
+  function qrSvg(text){
+    if(typeof qrcode!=='function') return '<div style="font-size:10px;color:var(--muted);text-align:center">QR library not loaded.<br>Open qrcode.js next to this page.</div>';
+    try{
+      var qr=qrcode(0,'M'); qr.addData(text); qr.make();
+      return qr.createSvgTag({cellSize:3,margin:2,scalable:true});
+    }catch(e){ return '<div style="font-size:10px;color:var(--muted)">QR error: '+esc(e.message)+'</div>'; }
+  }
+  function tagQrText(t){
+    var lines=['ACCL-WC',t.code||'',t.name,t.lat.toFixed(6)+','+t.lng.toFixed(6),t.acc!=null?('+/-'+Math.round(t.acc)+'m'):''];
+    if(location.protocol!=='file:') lines.push(location.origin+location.pathname+'?tag='+encodeURIComponent(t.id));
+    return lines.filter(function(x){ return !!x; }).join('\n');
+  }
+  function openQr(id){
+    var t=tagById(id); if(!t) return;
+    QR_TAG=id;
+    $('qrName').textContent=t.name;
+    $('qrSub').textContent=(t.code||'')+(t.zone?' · '+t.zone:'')+(t.note?' · '+t.note:'');
+    $('qrHost').innerHTML=qrSvg(tagQrText(t));
+    var m=$('qrMeta');
+    if(m){
+      m.style.display='block';
+      m.textContent='GPS '+t.lat.toFixed(6)+', '+t.lng.toFixed(6)+(t.acc!=null?' · ±'+t.acc.toFixed(0)+' m':'')+' · tagged '+new Date(t.createdAt||Date.now()).toLocaleString();
+    }
+    $('qrModal').classList.add('show');
+  }
+  function closeQr(){ $('qrModal').classList.remove('show'); QR_TAG=null; var m=$('qrMeta'); if(m) m.style.display='none'; }
+  function focusQrTag(){ var id=QR_TAG; closeQr(); focusTag(id); }
+  function deleteQrTag(){ var id=QR_TAG; var t=tagById(id); if(!t) return; if(!confirm('Delete tag “'+t.name+'”?')) return; removeTag(id); closeQr(); }
+  function saveBlob(blob,filename){
+    var a=document.createElement('a'), url=URL.createObjectURL(blob);
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); if(a.parentNode) a.parentNode.removeChild(a); },1500);
+  }
+  function downloadQr(){
+    var t=tagById(QR_TAG); if(!t) return;
+    var svg=$('qrHost')&&$('qrHost').querySelector('svg');
+    if(!svg){ toast('QR not available',true); return; }
+    var data=new XMLSerializer().serializeToString(svg);
+    var img=new Image();
+    img.onload=function(){
+      var size=760, c=document.createElement('canvas'); c.width=size; c.height=size;
+      var ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
+      ctx.drawImage(img,0,0,size,size);
+      var name='WC-'+(t.code||t.name).replace(/[^\w-]+/g,'_')+'.png';
+      if(c.toBlob) c.toBlob(function(b){ saveBlob(b,name); },'image/png');
+      else { var a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=name; a.click(); }
+    };
+    img.onerror=function(){ toast('Could not render the QR image',true); };
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(data);
+  }
+  function printQr(){ if(!QR_TAG) return; window.print(); }
+
+  /* ---------- saved tags list ---------- */
+  function renderTagList(){
+    var host=$('tagList'); if(!host) return;
+    var q=($('tagSearch')&&$('tagSearch').value||'').trim().toLowerCase();
+    var list=TAGS.slice().sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+    if(q) list=list.filter(function(t){ return (t.name+' '+(t.code||'')+' '+(t.zone||'')+' '+(t.note||'')).toLowerCase().indexOf(q)>=0; });
+    if(!list.length){
+      host.innerHTML='<div class="tagempty">No tags yet.<br>Tap “Tag Workcenter”, stand at the location and capture GPS.</div>';
+      return;
+    }
+    host.innerHTML=list.map(function(t){
+      var pin=t.dx!=null?'pinned':'GPS only';
+      var dt=t.createdAt?new Date(t.createdAt).toLocaleDateString():'—';
+      return '<div class="tagrow"><div class="tagrowmain"><b>'+esc(t.name)+'</b>'+
+        '<span class="sm">'+esc(t.code||'')+(t.zone?' · '+esc(t.zone):'')+' · '+pin+'</span>'+
+        '<span class="sm2">'+t.lat.toFixed(6)+', '+t.lng.toFixed(6)+' · ±'+(t.acc!=null?Math.round(t.acc):'?')+' m · '+dt+'</span></div>'+
+        '<div class="tagrowbtns">'+
+          (t.dx!=null?'<button onclick="closeTagList();focusTag(\''+t.id+'\')">Locate</button>':'')+
+          '<button onclick="openQr(\''+t.id+'\')">QR</button>'+
+          '<button class="del" onclick="deleteTag(\''+t.id+'\')">Del</button>'+
+        '</div></div>';
+    }).join('');
+  }
+  function openTagList(){ updateCounts(); renderTagList(); $('tagListModal').classList.add('show'); }
+  function closeTagList(){ $('tagListModal').classList.remove('show'); }
+  function removeTag(id){
+    TAGS=TAGS.filter(function(x){ return x.id!==id; });
+    DIRTY=true; saveState();
+    renderTagPins(); renderTagList(); updateCounts(); pushAll();
+    toast('Tag deleted');
+  }
+  function deleteTag(id){ var t=tagById(id); if(!t) return; if(!confirm('Delete tag “'+t.name+'”?')) return; removeTag(id); }
+
+  function exportPayload(){ return {app:'accl-workcenter-tags',version:1,exportedAt:new Date().toISOString(),tags:TAGS,meta:META}; }
+  function exportTags(){ saveBlob(new Blob([JSON.stringify(exportPayload(),null,2)],{type:'application/json'}),'workcenter-tags-'+new Date().toISOString().slice(0,10)+'.json'); }
+  function downloadTagsJson(){
+    saveBlob(new Blob([JSON.stringify({tags:TAGS,meta:META,savedAt:Date.now()},null,1)],{type:'application/json'}),'tags.json');
+    toast('tags.json downloaded — commit it to publish the pins on GitHub Pages');
+  }
+  function importTags(ev){
+    var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var j=JSON.parse(reader.result);
+        var incoming=Array.isArray(j.tags)?j.tags:[];
+        if(!incoming.length) throw new Error('no tags in file');
+        var map={}; TAGS.forEach(function(t){ map[t.id]=t; });
+        incoming.forEach(function(t){
+          if(!t||!t.id||!/^[A-Za-z0-9_-]{1,80}$/.test(String(t.id))) return;
+          var cur=map[t.id];
+          if(!cur || (t.updatedAt||0)>=(cur.updatedAt||0)) map[t.id]=t;
+        });
+        TAGS=Object.keys(map).map(function(k){ return map[k]; });
+        if(j.meta&&j.meta.calibration&&(!META.calibration||(j.meta.calibration.at||0)>(META.calibration.at||0))) META=j.meta;
+        DIRTY=true; saveState(); applyCalibrationToTags(true);
+        renderTagPins(); renderTagList(); updateCounts(); pushAll();
+        toast('Imported '+incoming.length+' tag(s)');
+      }catch(e){ toast('Import failed: '+e.message,true); }
+      ev.target.value='';
+    };
+    reader.readAsText(f);
+  }
+
+  /* ---------- 3D pins + picking ---------- */
+  function renderTagPins(){
+    if(typeof THREE==='undefined'||!scene) return;
+    if(TAG_GROUP){
+      scene.remove(TAG_GROUP);
+      TAG_GROUP.traverse(function(o){
+        if(o.geometry) o.geometry.dispose();
+        if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); }
+      });
+      TAG_GROUP=null;
+    }
+    PICKABLE=PICKABLE.filter(function(o){ return !(o.userData&&o.userData.tagId); });
+    TAG_GROUP=new THREE.Group(); TAG_GROUP.name='workcenter-tags'; scene.add(TAG_GROUP);
+    TAGS.forEach(function(t){
+      if(t.dx==null||t.dy==null) return;
+      var p=worldPos(t.dx,t.dy), x=p[0], z=p[1], col=0x1e88e5;
+      var matPin=new THREE.MeshStandardMaterial({color:col,emissive:0x0b4f8a,emissiveIntensity:.55,roughness:.35,metalness:.2});
+      var ball=new THREE.Mesh(new THREE.SphereGeometry(1.15,14,14),matPin);
+      ball.position.set(x,6.6,z); ball.userData.tagId=t.id; TAG_GROUP.add(ball); PICKABLE.push(ball);
+      var cone=new THREE.Mesh(new THREE.ConeGeometry(0.95,2.6,10),matPin.clone());
+      cone.position.set(x,4.9,z); cone.rotation.x=Math.PI; cone.userData.tagId=t.id; TAG_GROUP.add(cone); PICKABLE.push(cone);
+      var stem=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,5.6,6),new THREE.MeshStandardMaterial({color:col,transparent:true,opacity:.45}));
+      stem.position.set(x,2.8,z); TAG_GROUP.add(stem);
+      var ring=new THREE.Mesh(new THREE.RingGeometry(1.25,1.75,26),new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide,transparent:true,opacity:.55,depthWrite:false}));
+      ring.rotation.x=-Math.PI/2; ring.position.set(x,.07,z); TAG_GROUP.add(ring);
+      if(t.accMap){
+        var r=Math.max(1.8,Math.min(18,t.accMap));
+        var halo=new THREE.Mesh(new THREE.RingGeometry(r,r+.5,32),new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide,transparent:true,opacity:.18,depthWrite:false}));
+        halo.rotation.x=-Math.PI/2; halo.position.set(x,.06,z); TAG_GROUP.add(halo);
+      }
+    });
+  }
+  function showTagTip(px,py,id){
+    var t=tagById(id); if(!t) return;
+    var tip=$('tip');
+    tip.innerHTML='<div class="n">'+esc(t.name)+'</div><div class="v">'+esc(t.code||'')+'</div><div class="h">'+(t.acc!=null?'±'+Math.round(t.acc)+' m · ':'')+'tagged location · click for label</div>';
+    tip.style.left=px+'px'; tip.style.top=py+'px'; tip.style.display='block';
+  }
+  function focusTag(id){
+    var t=tagById(id); if(!t) return;
+    if(t.dx==null){ toast('This tag is not on the map yet — calibrate the map first.',true); return; }
+    if(!camTarget){ toast('The 3D map is not available.',true); return; }
+    var p=worldPos(t.dx,t.dy);
+    camTarget.set(p[0],4,p[1]);
+    DIST=Math.max(55,Math.min(150,DIST));
+    autoRotate=false;
+    var br=$('btnRot'); if(br) br.classList.remove('active');
+    closePanel();
+    toast(t.name+' · centred on the map');
+  }
+
+  /* ---------- mode / deep link ---------- */
+  function toggleTagMode(){
+    var on=!document.body.classList.contains('tagging');
+    document.body.classList.toggle('tagging',on);
+    var b=$('btnTag'); if(b) b.classList.toggle('active',on);
+    if(on){
+      popZones(); popSuggest();
+      if(WALK) toggleWalk();
+      closePanel();
+      gpsStart();
+      tagFormChange();
+      if(!META.calibration) showWarn('Map is not calibrated yet — you can tag now, then calibrate once to place the pins.', 'warn');
+    } else {
+      gpsStop(true);
+    }
+  }
+  function handleDeepLink(){
+    var m=/[?&]tag=([^&]+)/.exec(location.search);
+    if(!m) return;
+    var id=decodeURIComponent(m[1]);
+    setTimeout(function(){ if(tagById(id)) openQr(id); },500);
+  }
+
+  /* ---------- init ---------- */
+  function init(){
+    popZones(); popSuggest(); popCalibWc(); syncBadge(); updateCalibState(); tagFormChange();
+    loadTags();
+    setInterval(function(){ if(DIRTY) pushAll(); },20000);
+    window.addEventListener('online',function(){ if(DIRTY) pushAll(); });
+  }
+  var G={
+    toggleTagMode:toggleTagMode,gpsStart:gpsStart,gpsStop:gpsStop,tagFormChange:tagFormChange,
+    confirmTag:confirmTag,resetTagForm:resetTagForm,openCalib:openCalib,closeCalib:closeCalib,
+    calibCapture:calibCapture,calibSave:calibSave,calibClear:calibClear,__calibRemove:__calibRemove,
+    openTagList:openTagList,closeTagList:closeTagList,renderTagList:renderTagList,
+    openQr:openQr,closeQr:closeQr,downloadQr:downloadQr,printQr:printQr,focusQrTag:focusQrTag,
+    deleteQrTag:deleteQrTag,deleteTag:deleteTag,tagAnother:tagAnother,
+    exportTags:exportTags,downloadTagsJson:downloadTagsJson,importTags:importTags,
+    showTagTip:showTagTip,focusTag:focusTag,renderTagPins:renderTagPins,
+    __tagDebug:{build:calibBuild,toMap:gpToMap,apply:applyModel}
+  };
+  for(var k in G) window[k]=G[k];
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
 </script>
 </body>
 </html>

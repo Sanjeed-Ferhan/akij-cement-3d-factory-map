@@ -4,6 +4,11 @@ live-server.js
 # local launcher
 start-bridge.bat
 
+# GPS survey tag store (written by live-server.js)
+# Commit an exported copy only if you intentionally want to publish the pins.
+tags.json
+tags.json.tmp
+
 # local/editor artifacts
 logs/
 .playwright-mcp/

@@ -11,7 +11,8 @@ Live data comes from **two sources**:
 | File | Purpose |
 |------|---------|
 | `index.html` | The 3D dashboard (three.js, single file). |
-| `live-server.js` | Dependency-free Node bridge + static server for the IBOS live data. |
+| `live-server.js` | Dependency-free Node bridge + static server for the IBOS live data **and the shared GPS tag store**. |
+| `qrcode.js` | Local QR-code generator (MIT, Kazuhiko Arase) used for printable workcenter labels. |
 | `start-bridge.bat` | Windows one-click launcher for `live-server.js`. |
 
 ## Quick start
@@ -34,6 +35,10 @@ window open.
 - `GET /api/milldata` → latest silo levels + mill TPH
 - `GET /api/live` → same + all topics + connection status
 - `GET /api/sheets?gid=N` → Google Sheets CSV proxy (so the dashboard works from `file://` too, no CORS)
+- `GET /api/tags` → shared workcenter tags + map calibration (`tags.json`)
+- `PUT /api/tags` → replace the tag list (`{tags:[...], meta:{...}}`)
+- `POST /api/tags` → upsert one tag (`{tag:{...}}`)
+- `DELETE /api/tags?id=…` → delete one tag
 
 > Opening `index.html` directly (`file://`) also works as long as `live-server.js` is running —
 > it reads from `http://localhost:8787`. If the bridge is **not** running, the silos and live TPH show
@@ -92,6 +97,39 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
 - **Fallbacks** — sheets unavailable → offline snapshot; IBOS bridge not running → markers fall back to
   downtime and the HUD shows the bridge as offline.
 
+## Workcenter tagging (GPS survey)
+Use **Tag Workcenter** to walk the plant and fix a location to each workcenter.
+
+1. Open the dashboard, tap **Tag Workcenter**, and allow location access.
+2. Stand at the workcenter and tap **Use my location**. Wait for a fix; the accuracy
+   (`± m`) turns green ≤8 m, amber ≤20 m, red above that. The app averages recent fixes
+   before saving, so give it a few seconds.
+3. Type the **workcenter name** (existing names autocomplete), optionally set a code, zone and note.
+4. **Confirm & fix location** → the tag is saved, a pin is placed on the 3D map (after calibration),
+   and a **QR label** is generated. Print it or download it as PNG.
+5. **Tags (n)** lists every saved tag with Locate / QR / Delete and JSON export/import.
+
+### One-time map calibration
+GPS gives latitude/longitude, but the 3D map uses the plant flow-sheet coordinates. Calibrate once:
+
+1. Stand at a known workcenter, open **Calibrate map**, select that workcenter and tap
+   **Capture GPS here (10 s)**.
+2. Move to a second known workcenter and repeat. A **third anchor** is recommended
+   (it enables a full affine fit and handles the drawing's rotation/mirroring).
+3. Check the **fit error** and **scale**, then **Save calibration**. Existing and new tags
+   are re-projected onto the map automatically.
+
+Tags are stored in `tags.json` through `live-server.js` (`/api/tags`). The panel badge shows
+**shared** when the bridge is reachable, or **local** when the browser is offline — local edits
+are queued in `localStorage` and pushed when the bridge comes back. `tags.json` is git-ignored
+because it contains site coordinates.
+
+> **GPS + HTTPS:** browsers block geolocation on insecure LAN addresses (`http://192.168.x.x`).
+> For phone use, either open the dashboard through an **HTTPS tunnel** to this machine
+> (e.g. `cloudflared tunnel --url http://localhost:8787`) so GPS **and** `/api/tags` work
+> same-origin, or use the GitHub Pages URL (GPS works; tags stay on the phone until exported).
+> `localhost` also counts as secure on the PC running the bridge.
+
 ## Configuration
 - **Google Sheet / targets / dashboard link** — `CFG` object in `index.html`.
 - **Workcenters, positions, live-key mapping** — `WC` array in `index.html`
@@ -107,6 +145,12 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
 Deployed as a **static** site on GitHub Pages — anyone can open it, from anywhere:
 
 **https://sanjeed-ferhan.github.io/akij-cement-3d-factory-map/**
+
+### Tags on GitHub Pages
+The static site reads a `tags.json` placed next to `index.html` (use **Download tags.json** in
+the **Tags** dialog and commit it to publish the pins). Pages cannot write, so on the public site
+new tags stay in that phone's `localStorage`. For live shared tagging use the local bridge over
+HTTPS, as described in **Workcenter tagging** above.
 
 ### Live data from anywhere (no server needed)
 The IBOS feed is published to the site by a **GitHub Action** (`.github/workflows/live.yml`) that runs
