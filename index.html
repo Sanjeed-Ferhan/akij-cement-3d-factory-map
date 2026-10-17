@@ -265,7 +265,7 @@ var WC = [
   {id:'crane',    code:'WC-IM-03', name:'E-Crane',                   zone:'Clinker import', type:'crane',     dx:800, dy:193},
   {id:'shed',     code:'WC-IM-04', name:'Storage under Shed',        zone:'Clinker import', type:'building',  dx:304, dy:335},
   {id:'truck',    code:'WC-IM-05', name:'Dump Truck',                zone:'Clinker import', type:'truck',     dx:660, dy:518},
-  {id:'clnk',     code:'WC-ST-01', name:'Clinker Storage Silo',      zone:'Clinker storage',type:'silo',      dx:839, dy:615, live:'CLNK-SILO', liveKind:'clinker', match:['clinker silo','clnk-silo']},
+  {id:'clnk',     code:'WC-ST-01', name:'Clinker Storage Silo',      zone:'Clinker storage',type:'silo',      dx:839, dy:615, live:'CLNK-SILO', liveKind:'clinker', cap:50000, match:['clinker silo','clnk-silo']},
   // ---- Grinding feed ----
   {id:'wf2',      code:'WC-GR-01', name:'Weigh Feeder',              zone:'Grinding feed',  type:'feeder',    dx:154, dy:784},
   {id:'wf3',      code:'WC-GR-02', name:'Weigh Feeder',              zone:'Grinding feed',  type:'feeder',    dx:447, dy:785},
@@ -273,10 +273,10 @@ var WC = [
   {id:'bc5',      code:'WC-GR-04', name:'Belt Conveyor',             zone:'Grinding feed',  type:'conveyor',  dx:219, dy:975},
   {id:'rv2',      code:'WC-GR-05', name:'Rotating Valve',            zone:'Grinding feed',  type:'feeder',    dx:219, dy:1199},
   // ---- Storage (4 cement silos: 2 OPC + 2 PCC) ----
-  {id:'opc1',     code:'WC-ST-02', name:'OPC Silo 1',                zone:'Storage',        type:'silo',      dx:826, dy:995,  live:'OPC-1', liveKind:'silo', match:['opc-1','opc silo']},
-  {id:'opc2',     code:'WC-ST-04', name:'OPC Silo 2',                zone:'Storage',        type:'silo',      dx:966, dy:995,  live:'OPC-2', liveKind:'silo', match:['opc-2','opc silo']},
-  {id:'pcc1',     code:'WC-ST-03', name:'PCC Silo 1',                zone:'Storage',        type:'silo',      dx:608, dy:1127, live:'SILO-1',liveKind:'silo', match:['silo-1','pcc silo','ppc silo','cement silo','warehouse block']},
-  {id:'pcc2',     code:'WC-ST-05', name:'PCC Silo 2',                zone:'Storage',        type:'silo',      dx:768, dy:1127, live:'SILO-2',liveKind:'silo', match:['silo-2','pcc silo','ppc silo','cement silo','warehouse block']},
+  {id:'opc1',     code:'WC-ST-02', name:'OPC Silo 1',                zone:'Storage',        type:'silo',      dx:826, dy:995,  live:'OPC-1', liveKind:'silo', cap:1000, match:['opc-1','opc silo']},
+  {id:'opc2',     code:'WC-ST-04', name:'OPC Silo 2',                zone:'Storage',        type:'silo',      dx:966, dy:995,  live:'OPC-2', liveKind:'silo', cap:1000, match:['opc-2','opc silo']},
+  {id:'pcc1',     code:'WC-ST-03', name:'PCC Silo 1',                zone:'Storage',        type:'silo',      dx:608, dy:1127, live:'SILO-1',liveKind:'silo', cap:10000, match:['silo-1','pcc silo','ppc silo','cement silo','warehouse block']},
+  {id:'pcc2',     code:'WC-ST-05', name:'PCC Silo 2',                zone:'Storage',        type:'silo',      dx:768, dy:1127, live:'SILO-2',liveKind:'silo', cap:10000, match:['silo-2','pcc silo','ppc silo','cement silo','warehouse block']},
   // ---- Grinding ----
   {id:'vrm1',     code:'WC-GR-06', name:'VRM-1 (Loesche)',           zone:'Grinding',       type:'mill',      dx:339, dy:1250, millKey:'VRM-1', live:'loesche_TPH', liveKind:'mill', status:'loesche'},
   {id:'vrm2',     code:'WC-GR-07', name:'VRM-2 (FLS)',               zone:'Grinding',       type:'mill',      dx:1223,dy:1293, millKey:'VRM-2', live:'fls_TPH',     liveKind:'mill', status:'fls'},
@@ -689,7 +689,9 @@ function pickWC(px,py){
 function showTip(px,py,wcId){
   var tip=document.getElementById('tip'), s=STATUS[wcId];
   var wc=WC.filter(function(x){return x.id===wcId;})[0];
-  tip.innerHTML='<div class="n">'+wc.name+'</div><div class="v">'+(s?metricText(s):'—')+'</div><div class="h">'+wc.code+' · click for details</div>';
+  var val=s?metricText(s):'—';
+  if(wc.cap && s && s.m && s.m.live) val += ' · ' + Math.round(wc.cap*s.m.live.v/100).toLocaleString()+' MT';
+  tip.innerHTML='<div class="n">'+wc.name+'</div><div class="v">'+val+'</div><div class="h">'+wc.code+' · click for details</div>';
   tip.style.left=px+'px'; tip.style.top=py+'px'; tip.style.display='block';
 }
 function hideTip(){ document.getElementById('tip').style.display='none'; }
@@ -791,7 +793,14 @@ function openPanel(id){
   document.getElementById('pZone').innerHTML='Zone: '+wc.zone+' &nbsp; <span class="badge b-'+s.rag+'">'+(s.rag==='green'?'ON TARGET':s.rag==='amber'?'WATCH':'LOSS')+'</span>';
   var rows='';
   if(s.m&&s.m.live && wc.live){
-    rows+='<div class="row"><span class="k">Live · '+(wc.liveKind==='mill'?'throughput':'level')+'</span><span class="v" style="color:var(--teal)">'+s.m.live.v.toFixed(2)+' '+s.m.live.unit+'</span></div>';
+    if(wc.cap){
+      var q=Math.round(wc.cap*s.m.live.v/100);
+      rows+='<div class="row"><span class="k">Level</span><span class="v" style="color:var(--teal)">'+s.m.live.v.toFixed(1)+' %</span></div>';
+      rows+='<div class="row"><span class="k">Quantity</span><span class="v" style="color:var(--teal)">'+q.toLocaleString()+' MT</span></div>';
+      rows+='<div class="row"><span class="k">Capacity</span><span class="v">'+wc.cap.toLocaleString()+' MT</span></div>';
+    } else {
+      rows+='<div class="row"><span class="k">Live · '+(wc.liveKind==='mill'?'throughput':'level')+'</span><span class="v" style="color:var(--teal)">'+s.m.live.v.toFixed(2)+' '+s.m.live.unit+'</span></div>';
+    }
   }
   rows+=(s.rows||[]).map(function(r){return '<div class="row"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';}).join('');
   rows+='<div class="row"><span class="k">Period</span><span class="v">'+(DATA?(PERIOD==='day'?DATA.lastLabel:DATA.mtdRange):'—')+'</span></div>';
@@ -913,9 +922,12 @@ function renderSilos(){
     var v=mm?mm.v:null, rag=mm?mm.rag:'green';
     var col = rag==='red'?'#ef4444':(rag==='amber'?'#f4b740':'#12b76a');
     var pct = v==null?0:Math.max(0,Math.min(100,v));
+    var qty = (v!=null && wc.cap) ? Math.round(wc.cap*v/100) : null;
+    var sub = mm ? (mm.sub||'') : 'waiting for IBOS…';
+    if(qty!=null) sub = qty.toLocaleString()+' MT of '+wc.cap.toLocaleString()+' MT · '+sub;
     rows+='<div class="sr"><div class="t"><span class="nm">'+wc.name+'</span><span class="pc" style="color:'+col+'">'+(v==null?'—':v.toFixed(1)+'%')+'</span></div>'+
       '<div class="bkg"><i style="width:'+pct.toFixed(1)+'%;background:'+col+'"></i></div>'+
-      '<div class="st">'+(mm?(mm.sub||''):'waiting for IBOS…')+'</div></div>';
+      '<div class="st">'+sub+'</div></div>';
   });
   host.innerHTML=rows||'<div class="st">No silos configured.</div>';
   document.getElementById('siloTs').textContent = LIVE_AT? new Date(LIVE_AT).toLocaleTimeString() : 'offline';
@@ -964,6 +976,7 @@ else { document.getElementById('err').style.display='flex'; }
 </script>
 </body>
 </html>
+
 
 
 

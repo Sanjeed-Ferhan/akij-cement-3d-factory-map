@@ -83,8 +83,9 @@ The bridge maps these into `/api/live` → `status` and the dashboard shows a **
 - **HUD** — **Net Production · Today** (good MT; sub-line shows gross, wastage and % of target),
   Live FLS/Loesche TPH + silo levels, plant OEE, and a green · amber · red workcenter count.
 - **Machine Status panel** (bottom-left) — ON/OFF for LOESCHE, FLS, Packer 1–5, Grid supply.
-- **Silo Levels panel** (bottom-right) — every silo listed with a live fill bar and %:
-  Clinker Silo, Cement Silo 1–2 (PCC), OPC Silo 1–2, colour-coded by RAG.
+- **Silo Levels panel** (bottom-right) — every silo listed with a live fill bar, % and **quantity in MT**
+  (level × capacity): Clinker 50,000 MT; OPC 1–2 1,000 MT each; PCC 1–2 10,000 MT each.
+  The drill panel also shows Level / Quantity / Capacity.
 - **Day / MTD toggle** for the sheets-based metrics.
 - **Click a work center** → drill panel (live value, output, achievement, OEE factors, NPT, top downtime
   reasons, IBOS last-updated) plus a link to the full OEE dashboard.
