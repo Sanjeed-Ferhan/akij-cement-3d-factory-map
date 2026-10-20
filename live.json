@@ -1,6 +1,6 @@
 {
  "ok": true,
- "connected": true,
+ "connected": false,
  "lastAt": 1792525164126,
  "milldata": {},
  "status": {
@@ -54,5 +54,6 @@
    "topic": "R1.status",
    "at": 1792525164553
   }
- }
+ },
+ "error": "Unexpected token '!', \"!DOCTYPE h\"... is not valid JSON"
 }
