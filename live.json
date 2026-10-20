@@ -1,13 +1,13 @@
 {
  "ok": true,
  "connected": true,
- "lastAt": 1792495612969,
+ "lastAt": 1792495673195,
  "milldata": {
   "loesche_TPH": "0.00",
   "SILO-1": "34.41",
-  "fls_TPH": "175.56",
+  "fls_TPH": "175.98",
   "OPC-1": "43.11",
-  "SILO-2": "55.94",
+  "SILO-2": "55.68",
   "CLNK-SILO": "72.16",
   "OPC-2": "22.22"
  },
@@ -20,7 +20,7 @@
   "m2": {
    "on": true,
    "topic": "M2.status",
-   "at": 1792495606985
+   "at": 1792495667051
   },
   "grid": {
    "on": true,
