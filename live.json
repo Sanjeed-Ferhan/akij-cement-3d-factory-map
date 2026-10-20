@@ -1,43 +1,43 @@
 {
  "ok": true,
  "connected": true,
- "lastAt": 1792511108713,
+ "lastAt": 1792511169441,
  "milldata": {},
  "status": {
   "loesche": {
    "on": true,
    "topic": "loesche.status",
-   "at": 1792511108714
+   "at": 1792511162958
   },
   "m2": {
    "on": true,
    "topic": "M2.status",
-   "at": 1792511108714
+   "at": 1792511162649
   },
   "grid": {
    "on": true,
    "topic": "GRID.status",
-   "at": 1792511108714
+   "at": 1792511169441
   },
   "packer1": {
    "on": false,
    "topic": "P1",
-   "at": 1792476482301
+   "at": 1792511167916
   },
   "packer2": {
    "on": false,
    "topic": "P2",
-   "at": 1792476482301
+   "at": 1792511167916
   },
   "packer4": {
-   "on": true,
+   "on": false,
    "topic": "P4",
-   "at": 1792476482301
+   "at": 1792511167916
   },
   "packer5": {
-   "on": false,
+   "on": true,
    "topic": "P5",
-   "at": 1792476482301
+   "at": 1792511167916
   },
   "fls": {
    "on": true,
@@ -52,8 +52,7 @@
   "r1": {
    "on": false,
    "topic": "R1.status",
-   "at": 1792511108714
+   "at": 1792476482299
   }
- },
- "error": "read ECONNRESET"
+ }
 }
